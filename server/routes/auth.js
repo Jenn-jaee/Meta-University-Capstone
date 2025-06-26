@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
+const passport = require('../config/passport');
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -15,6 +16,12 @@ router.post('/register', async (req, res) => {
     try {
         const {email, password, name} = req.body;
         console.log('Register attempt:', { email, name }); //for debugging
+
+        // VALIDATION: Ensure email and password are provided
+        if (!email || !password) {
+            return res.status(400).json({error: 'Email and password are required'});
+        }
+
 
 
         //check if user already exists
@@ -50,6 +57,10 @@ router.post('/login', async (req, res) => {
         const {email, password} = req.body;
         console.log('Login attempt for email:', email); //for debugging
 
+        // VALIDATION: Ensure email and password are provided
+        if (!email || !password) {
+            return res.status(400).json({error: 'Email and password are required'});
+        }
 
         // check if user exists
         const user = await prisma.user.findUnique({where: {email}});
@@ -57,7 +68,13 @@ router.post('/login', async (req, res) => {
 
         if (!user) {
             console.log('Login failed: User not found'); //for debugging
-            return res.status(400).json({error: 'Invalid credetials'});
+            return res.status(400).json({error: 'Invalid credentials'});
+        }
+
+        // Check if user has a password (Google users won't)
+        if (!user.password) {
+            console.log('Login failed: User registered with Google');
+            return res.status(400).json({error: 'Please login with Google'});
         }
 
 
@@ -68,7 +85,7 @@ router.post('/login', async (req, res) => {
 
         if (!validPassword) {
             console.log('Login failed: Invalid password');  //for debugging
-            return res.status(400).json({error: 'Invalid credetials'});
+            return res.status(400).json({error: 'Invalid credentials'});
         }
 
         // create JWT token
@@ -84,5 +101,18 @@ router.get('/test', (req, res) => {
     console.log('Test route hit');
     res.json({ message: 'Auth routes are working' });
 });
+
+
+router.get('/google',
+    passport.authenticate('google', { scope: ['profile', 'email'] })
+  );
+
+router.get('/google/callback',
+passport.authenticate('google', { session: false }),
+async (req, res) => {
+    const token = jwt.sign({ userId: req.user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    res.redirect(`${process.env.CLIENT_URL}/auth-success?token=${token}`);
+}
+);
 
 module.exports = router;

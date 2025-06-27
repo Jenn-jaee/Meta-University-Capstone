@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const session = require('express-session');
+const passport = require('./config/passport');
 require('dotenv').config();
 
 const app = express();
@@ -17,12 +19,24 @@ app.use((req, res, next) => {
     next();
 });
 
+//passport config and session setup (for authentication)
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: { maxAge: 5000 } // 5 seconds
+  }));
+  app.use(passport.initialize());
+  app.use(passport.session());
+
 //routes
 const authRoutes = require('./routes/auth');
 const journalRoutes = require('./routes/journal');
+const checkAuth = require('./middleware/checkAuth');
+
 
 app.use('/api/auth', authRoutes);
-app.use('/api', journalRoutes);
+app.use('/api', checkAuth, journalRoutes);
 
 //Test route
 app.get('/', (req, res) => {

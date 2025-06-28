@@ -28,10 +28,16 @@ router.get('/journal', async (req, res) => {
 router.post('/journal', async (req, res) => {
     try {
         const {content, moodValue} = req.body;
+        console.log('Received moodValue:', moodValue); //for debugging
+
 
         //create journal entry with mood
         const entry = await prisma.journalEntry.create({
-          data: {content, userId: req.userId, mood: moodValue?{create: {value: moodValue, userId: req.userId }} : undefined}, include: {mood: true}
+          data: {content,
+            userId: req.userId,
+            mood: moodValue !== undefined
+            ?{create: {value: moodValue, userId: req.userId }} : undefined},
+            include: {mood: true}
         });
 
         res.json(entry);

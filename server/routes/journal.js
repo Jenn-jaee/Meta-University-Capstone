@@ -24,28 +24,44 @@ router.get('/journal', async (req, res) => {
   }
 });
 
-//POST /api/journal - Create a new journal entry
+
+// POST /api/journal - Create a new journal entry
 router.post('/journal', async (req, res) => {
     try {
-        const {content, moodValue} = req.body;
-        console.log('Received moodValue:', moodValue); //for debugging
+      const { content, moodValue, title } = req.body;
+      console.log('Received moodValue:', moodValue); // For debugging
 
+      let moodId = null;
 
-        //create journal entry with mood
-        const entry = await prisma.journalEntry.create({
-          data: {content,
+      // 1. Create mood separately if moodValue is provided
+      if (moodValue !== undefined) {
+        const mood = await prisma.mood.create({
+          data: {
+            value: moodValue,
             userId: req.userId,
-            mood: moodValue !== undefined
-            ?{create: {value: moodValue, userId: req.userId }} : undefined},
-            include: {mood: true}
+          },
         });
-
-        res.json(entry);
-      }catch(error){
-        console.error('Error creating entry', error);
-        res.status(500).json({message: 'Error creating entry'});
+        moodId = mood.id;
       }
-});
+
+      // 2. Create journal entry and connect moodId
+      const entry = await prisma.journalEntry.create({
+        data: {
+          title: title || 'Untitled Entry',
+          content,
+          userId: req.userId,
+          moodId,
+        },
+        include: { mood: true },
+      });
+
+      res.json(entry);
+    } catch (error) {
+      console.error('Error creating entry', error);
+      res.status(500).json({ message: 'Error creating entry' });
+    }
+  });
+
 
 //GET /api/journal/:id - Get a single journal entry
 router.get('/journal/:id', async (req, res) => {
@@ -67,22 +83,32 @@ router.get('/journal/:id', async (req, res) => {
 //PUT /api/journal/:id - Update a single journal entry
 router.put('/journal/:id', async (req, res) => {
     try{
-        const {content, moodValue} = req.body;
+        const { content, title, moodValue } = req.body;
 
         //update entry
         const entry = await prisma.journalEntry.update({
-            where: {id: req.params.id}, data: {content}, include: {mood: true},
-        });
+            where: { id: req.params.id },
+            data: {
+              ...(title && { title }),
+              ...(content && { content }),
+            },
+            include: { mood: true },
+          });
 
+        console.log(entry.mood) // For debugging
         //update or create mood if provided
         if (moodValue !== undefined) {
             if (entry.mood) {
                 await prisma.mood.update({
-                    where: {id: entry.mood.id}, data: {value: moodValue},
+                    where: {id: entry.mood.id},
+                    data: {value: moodValue},
                 });
             }else{
                 await prisma.mood.create({
-                    data: {value: moodValue, userId: req.userId, journalEntryId: entry.id}
+                    data: {
+                        value: moodValue,
+                        userId: req.userId,
+                        journalEntryId: entry.id}
                 });
             }
         }
@@ -93,28 +119,39 @@ router.put('/journal/:id', async (req, res) => {
         });
         res.json(updatedEntry);
     }catch(error){
-        console.error('Error updating entry', error);
-        res.status(500).json({message: 'Error updating entry'});
+        console.error('Error updating entry:', error.message);
+        console.error(error); // Full PrismaClientKnownRequestError
+        res.status(500).json({ message: 'Error updating entry', error: error.message });
     }
 });
 
-//DELETE /api/journal/:id - Delete journal entry
+// DELETE /api/journal/:id - Delete journal entry
 router.delete('/journal/:id', async (req, res) => {
-    try{
-        // Delete associated mood first
-        await prisma.mood.deleteMany({
-            where: {journalEntryId: req.params.id},
-        });
+    try {
+      // Find the journal entry to get its moodId (if any)
+      const entry = await prisma.journalEntry.findUnique({
+        where: { id: req.params.id },
+        include: { mood: true },
+      });
 
-        // Delete entry
-        await prisma.journalEntry.delete({
-            where: {id: req.params.id}
+      // Delete associated mood first (if it exists)
+      if (entry?.mood) {
+        await prisma.mood.delete({
+          where: { id: entry.mood.id },
         });
-        res.json({message: 'Entry deleted successfully'});
-    }catch(error){
-        console.error('Error deleting entry:', error);
-        res.status(500).json({message: 'Error deleting entry'});
+      }
+
+      // Delete entry
+      await prisma.journalEntry.delete({
+        where: { id: req.params.id },
+      });
+
+      res.json({ message: 'Entry deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting entry:', error);
+      res.status(500).json({ message: 'Error deleting entry' });
     }
-});
+  });
+
 
 module.exports = router;

@@ -29,7 +29,7 @@ router.get('/journal', async (req, res) => {
 router.post('/journal', async (req, res) => {
     try {
       const { content, moodValue, title } = req.body;
-      console.log('Received moodValue:', moodValue); // For debugging
+      console.debug('Received moodValue:', moodValue); // For debugging
 
       let moodId = null;
 
@@ -95,7 +95,7 @@ router.put('/journal/:id', async (req, res) => {
             include: { mood: true },
           });
 
-        console.log(entry.mood) // For debugging
+        console.debug(entry.mood) // For debugging
         //update or create mood if provided
         if (moodValue !== undefined) {
             if (entry.mood) {

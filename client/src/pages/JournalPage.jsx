@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../api/axiosInstance.js';
 import JournalForm from '../components/JournalForm.jsx';
 import JournalList from '../components/JournalList.jsx';
+import { STATUS } from '../constants/statusCodes.js';
 import '../components/Journal.css';
 
 function JournalPage() {
@@ -21,36 +22,40 @@ function JournalPage() {
     fetchEntries();
   }, [navigate]);
 
-  // Journal Logic
-  const fetchEntries = async () => {
-    try {
-      const response = await axios.get('http://localhost:3001/api/journal');
-      setEntries(response.data);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching entries:', error);
-      if (error.response?.status === 401) {
-        localStorage.removeItem('token');
-        navigate('/');
-      }
-    }
+  const fetchEntries = () => {
+    axios
+      .get('/api/journal')
+      .then((response) => {
+        if (response.status === STATUS.SUCCESS) {
+          setEntries(response.data);
+          setLoading(false);
+        }
+      })
+      .catch((error) => {
+        console.error('Error fetching entries:', error);
+        if (error.response?.status === STATUS.NOT_AUTHORIZED) {
+          localStorage.removeItem('token');
+          navigate('/');
+        }
+      });
   };
 
-  const handleSubmit = async (entryData) => {
-    console.log("Sending entry data:", entryData); // For debugging purposes
+  const handleSubmit = (entryData) => {
+    const request = editingEntry
+      ? axios.put(`/api/journal/${editingEntry.id}`, entryData)
+      : axios.post('/api/journal', entryData);
 
-    try {
-      if (editingEntry) {
-        await axios.put(`http://localhost:3001/api/journal/${editingEntry.id}`, entryData);
-        setEditingEntry(null);
-      } else {
-        await axios.post('http://localhost:3001/api/journal', entryData);
-      }
-      fetchEntries();
-    } catch (error) {
-      console.error('Error saving entry:', error);
-      alert('Failed to save entry. Please try again.');
-    }
+    request
+      .then((response) => {
+        if (response.status === STATUS.SUCCESS) {
+          fetchEntries();
+          setEditingEntry(null);
+        }
+      })
+      .catch((error) => {
+        console.error('Error saving entry:', error);
+        alert('Something went wrong while saving your entry. Please try again.');
+      });
   };
 
   const handleEdit = (entry) => {
@@ -58,15 +63,19 @@ function JournalPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = (id) => {
     if (window.confirm('Are you sure you want to delete this entry?')) {
-      try {
-        await axios.delete(`http://localhost:3001/api/journal/${id}`);
-        fetchEntries();
-      } catch (error) {
-        console.error('Error deleting entry:', error);
-        alert('Failed to delete entry. Please try again.');
-      }
+      axios
+        .delete(`/api/journal/${id}`)
+        .then((response) => {
+          if (response.status === STATUS.SUCCESS) {
+            fetchEntries();
+          }
+        })
+        .catch((error) => {
+          console.error('Error deleting entry:', error);
+          alert('Something went wrong while deleting. Please try again.');
+        });
     }
   };
 

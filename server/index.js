@@ -14,7 +14,7 @@ app.use(express.json());
 app.use((req, res, next) => {
     console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
     if (req.body && Object.keys(req.body).length > 0) {
-      console.log('Request body:', req.body); //for debugging
+      console.debug('Request body:', req.body); //for debugging
     }
     next();
 });

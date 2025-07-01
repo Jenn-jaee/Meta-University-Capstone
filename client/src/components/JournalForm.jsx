@@ -32,8 +32,8 @@ function JournalForm({ onSubmit, editingEntry, onCancel }) {
     };
 
     // Check if the user has selected a mood
-    console.log("Selected mood:", mood); //for debugging
-    console.log("Mapped moodValue:", moodMap[mood]); //for debugging
+    console.debug("Selected mood:", mood); //for debugging
+    console.debug("Mapped moodValue:", moodMap[mood]); //for debugging
 
 
     onSubmit({ title, content, moodValue: moodMap[mood] || 3 });

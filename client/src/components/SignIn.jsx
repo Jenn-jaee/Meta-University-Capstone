@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../api/axiosInstance.js';
+import { BASE_URL } from '../constants/statusCodes.js';
 import './SignIn.css';
 
 function SignIn() {
@@ -21,7 +22,7 @@ function SignIn() {
         ? { email, password }
         : { email, password, name };
 
-      const response = await axios.post(`http://localhost:3001${endpoint}`, data);
+      const response = await axios.post(endpoint, data);
 
       localStorage.setItem('token', response.data.token);
       navigate('/dashboard');
@@ -80,11 +81,11 @@ function SignIn() {
 
         <div className="divider">OR</div>
 
-        <a href="http://localhost:3001/api/auth/google" className="google-link">
-          <button className="google-btn">
-            <span className="google-icon">🔍</span>
-            Continue with Google
-          </button>
+        <a href={`${BASE_URL}/api/auth/google`} className="google-link">
+            <button className="google-btn">
+                <span className="google-icon">🔍</span>
+                Continue with Google
+            </button>
         </a>
 
         <p className="toggle-section">

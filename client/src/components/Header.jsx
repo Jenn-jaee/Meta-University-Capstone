@@ -1,13 +1,42 @@
 import './Layout.css';
+import { NavLink } from 'react-router-dom';
 
 function Header({ onLogout }) {
   return (
     <header className="header">
       <div className="header-container">
-        <h1 className="header-title">MindBloom Journal</h1>
+        <h1 className="header-title">MindBloom</h1>
         <nav className="header-nav">
-          <button className="nav-button active">Journal</button>
-          <button className="nav-button">Habits</button>
+          <NavLink
+            to="/dashboard"
+            className="nav-button">
+              🏠 Home
+          </NavLink>
+
+          <NavLink
+            to="journal"
+            className={({ isActive }) =>
+              isActive ? 'nav-button active' : 'nav-button'
+            }
+          >
+            Journal
+          </NavLink>
+          <NavLink
+            to="habit"
+            className={({ isActive }) =>
+              isActive ? 'nav-button active' : 'nav-button'
+            }
+          >
+            Habits
+          </NavLink>
+          <NavLink
+            to="mood"
+            className={({ isActive }) =>
+              isActive ? 'nav-button active' : 'nav-button'
+            }
+          >
+            Mood
+          </NavLink>
           <button className="logout-button" onClick={onLogout}>
             Logout
           </button>

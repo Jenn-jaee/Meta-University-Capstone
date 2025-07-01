@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import Header from './Header.jsx';
-import JournalForm from './JournalForm.jsx';
-import JournalList from './JournalList.jsx';
-import './Dashboard.css';
+import JournalForm from '../components/JournalForm.jsx';
+import JournalList from '../components/JournalList.jsx';
+import '../components/Journal.css';
 
-function Dashboard() {
+function JournalPage() {
   const [entries, setEntries] = useState([]);
   const [editingEntry, setEditingEntry] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -22,6 +21,7 @@ function Dashboard() {
     fetchEntries();
   }, [navigate]);
 
+  // Journal Logic
   const fetchEntries = async () => {
     try {
       const response = await axios.get('http://localhost:3001/api/journal');
@@ -70,11 +70,6 @@ function Dashboard() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/');
-  };
-
   if (loading) {
     return (
       <div className="loading-container">
@@ -85,22 +80,19 @@ function Dashboard() {
   }
 
   return (
-    <div className="dashboard">
-      <Header onLogout={handleLogout} />
-      <main className="dashboard-content">
-        <JournalForm
-          onSubmit={handleSubmit}
-          editingEntry={editingEntry}
-          onCancel={() => setEditingEntry(null)}
-        />
-        <JournalList
-          entries={entries}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
-      </main>
+    <div className="journal-page">
+      <JournalForm
+        onSubmit={handleSubmit}
+        editingEntry={editingEntry}
+        onCancel={() => setEditingEntry(null)}
+      />
+      <JournalList
+        entries={entries}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
     </div>
   );
 }
 
-export default Dashboard;
+export default JournalPage;

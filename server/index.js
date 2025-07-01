@@ -33,10 +33,14 @@ app.use(session({
 const authRoutes = require('./routes/auth');
 const journalRoutes = require('./routes/journal');
 const checkAuth = require('./middleware/checkAuth');
+const habitRoutes = require('./routes/habit');
+
 
 
 app.use('/api/auth', authRoutes);
 app.use('/api', checkAuth, journalRoutes);
+app.use('/api/habits', habitRoutes);
+
 
 //Test route
 app.get('/', (req, res) => {

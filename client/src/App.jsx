@@ -11,7 +11,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<SignIn />} />
-        <Route path="/auth-success" element={<AuthSuccess />} /> {/* ✅ Add this */}
+        <Route path="/auth-success" element={<AuthSuccess />} />
 
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<DashboardHome />} />

@@ -14,7 +14,7 @@ app.use(express.json());
 app.use((req, res, next) => {
     console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
     if (req.body && Object.keys(req.body).length > 0) {
-      console.log('Request body:', req.body); //for debugging
+      console.debug('Request body:', req.body); //for debugging
     }
     next();
 });
@@ -33,10 +33,22 @@ app.use(session({
 const authRoutes = require('./routes/auth');
 const journalRoutes = require('./routes/journal');
 const checkAuth = require('./middleware/checkAuth');
+const habitRoutes = require('./routes/habit');
+const habitLogsRouter = require('./routes/habitLogs');
+const moodsRoutes = require('./routes/moods');
+
+
+
 
 
 app.use('/api/auth', authRoutes);
 app.use('/api', checkAuth, journalRoutes);
+app.use('/api/habits', habitRoutes);
+app.use('/api/habit-logs', habitLogsRouter);
+app.use('/api/moods', moodsRoutes);
+
+
+
 
 //Test route
 app.get('/', (req, res) => {

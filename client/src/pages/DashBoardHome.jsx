@@ -1,5 +1,6 @@
 // pages/DashBoardHome.jsx
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from '../api/axiosInstance';
 import './DashboardHome.css';
 
@@ -9,6 +10,7 @@ function DashBoardHome() {
   const [habits, setHabits] = useState([]);
   const [logs, setLogs] = useState([]);
   const [entries, setEntries] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchMoods();
@@ -78,7 +80,9 @@ function DashBoardHome() {
       <section className="dashboard-section habits-section">
         <div className="section-header">
           <h3>Today’s Habits</h3>
-          <a href="#">Manage Habits</a>
+          <a onClick={() => navigate('/dashboard/habit')} className="link" style={{ cursor: 'pointer' }}>
+                Manage Habits
+          </a>
         </div>
         <div className="habits-list">
           {habits.map((habit) => {
@@ -102,13 +106,21 @@ function DashBoardHome() {
       <section className="dashboard-section recent-entries">
         <div className="section-header">
           <h3>Recent Journal Entries</h3>
-          <a href="#">View All</a>
+          <a onClick={() => navigate('/dashboard/journal')} className="link" style={{ cursor: 'pointer' }}>
+                View All
+          </a>
         </div>
         {Array.isArray(entries) && entries.slice(0, 3).map((entry) => (
             <div key={entry.id} className="entry">
-                <p className="entry-date">{new Date(entry.date).toLocaleDateString()}</p>
-                <p className="entry-snippet">{entry.body?.slice(0, 100)}...</p>
-                <span className="emoji">{entry.emoji || '📝'}</span>
+                <p className="entry-date">
+                {new Date(entry.createdAt).toLocaleDateString()}
+                </p>
+                <p className="entry-snippet">
+                {entry.content?.slice(0, 100)}...
+                </p>
+                <span className="emoji">
+                {entry.mood?.emoji || '📝'}
+                </span>
             </div>
         ))}
       </section>

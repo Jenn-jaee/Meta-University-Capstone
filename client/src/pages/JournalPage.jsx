@@ -50,6 +50,9 @@ function JournalPage() {
         if (response.status === STATUS.SUCCESS) {
           fetchEntries();
           setEditingEntry(null);
+        } else {
+            console.error('Request failed with status:', response.status); // Log the error status
+            alert('Something went wrong while saving your entry. Please try again.');
         }
       })
       .catch((error) => {

@@ -1,0 +1,133 @@
+
+
+.welcome-container {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 2rem;
+    text-align: center;
+    background: linear-gradient(to bottom right, #ede7f6, #d1c4e9);
+    color: #333;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    }
+
+    .welcome-header {
+    margin-bottom: 2rem;
+    }
+
+    .nav-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    }
+
+    .nav-btn {
+    background-color: #fff;
+    border: 2px solid #6ab7ff;
+    color: #333;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s ease;
+    }
+
+    .nav-btn:hover {
+    background-color: #6ab7ff;
+    color: white;
+    }
+
+    .welcome-title {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    color: #2e7d32;
+    }
+
+    .welcome-subtitle {
+    font-size: 1.2rem;
+    color: #555;
+    }
+
+    .features-section {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin-top: 2rem;
+    }
+
+    .feature-card {
+    background-color: #ffffff;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    width: 280px;
+    text-align: center;
+    transition: transform 0.2s ease;
+    }
+
+    .feature-card:hover {
+    transform: translateY(-5px);
+    }
+
+    .feature-icon {
+    font-size: 2.5rem;
+    }
+
+    .feature-title {
+    margin-top: 0.5rem;
+    font-size: 1.2rem;
+    color: #1976d2;
+    }
+
+    .feature-text {
+    color: #666;
+    font-size: 0.95rem;
+    margin-top: 0.5rem;
+    }
+
+    .user-stories {
+    margin-top: 3rem;
+    }
+
+    .stories-title {
+    font-size: 1.6rem;
+    color: #4a148c;
+    margin-bottom: 1rem;
+    }
+
+    .story {
+    margin: 1rem auto;
+    max-width: 600px;
+    font-style: italic;
+    color: #444;
+    }
+
+    .user {
+    display: block;
+    margin-top: 0.5rem;
+    font-weight: bold;
+    color: #6a1b9a;
+    }
+
+    .welcome-footer {
+    margin-top: 3rem;
+    }
+
+    .get-started-btn {
+    padding: 1rem 2rem;
+    background-color: #66bb6a;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    }
+
+    .get-started-btn:hover {
+    background-color: #43a047;
+    }

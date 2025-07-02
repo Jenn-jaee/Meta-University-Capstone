@@ -1,7 +1,52 @@
-import React from 'react';
+// pages/DashBoardHome.jsx
+import React, { useEffect, useState } from 'react';
+import axios from '../api/axiosInstance';
 import './DashboardHome.css';
 
 function DashBoardHome() {
+  const [moods, setMoods] = useState([]);
+  const [todayMood, setTodayMood] = useState(null);
+  const [habits, setHabits] = useState([]);
+  const [logs, setLogs] = useState([]);
+  const [entries, setEntries] = useState([]);
+
+  useEffect(() => {
+    fetchMoods();
+    fetchHabits();
+    fetchLogs();
+    fetchEntries();
+  }, []);
+
+  const fetchMoods = () => {
+    axios.get('/api/moods')
+      .then((res) => {
+        const all = res.data || [];
+        setMoods(all);
+        const today = new Date().toISOString().split('T')[0];
+        const todayEntry = all.find((m) => m.date.startsWith(today));
+        setTodayMood(todayEntry);
+      })
+      .catch((err) => console.error('Error fetching moods:', err));
+  };
+
+  const fetchHabits = () => {
+    axios.get('/api/habits')
+      .then((res) => setHabits(res.data))
+      .catch((err) => console.error('Error fetching habits:', err));
+  };
+
+  const fetchLogs = () => {
+    axios.get('/api/habit-logs/today')
+      .then((res) => setLogs(res.data))
+      .catch((err) => console.error('Error fetching logs:', err));
+  };
+
+  const fetchEntries = () => {
+    axios.get('/api/journal')
+      .then((res) => setEntries(res.data))
+      .catch((err) => console.error('Error fetching entries:', err));
+  };
+
   return (
     <div className="dashboard-home-container">
       <header className="dashboard-header">
@@ -15,8 +60,12 @@ function DashBoardHome() {
             <h3>This Week’s Mood</h3>
             <a href="#">View All</a>
           </div>
-          <p className="mood-text">😊 Good</p>
-          <div className="chart-placeholder">Mood Chart Visualization</div>
+          <p className="mood-text">
+            {todayMood ? `${todayMood.emoji || '🙂'} ${todayMood.note || 'Logged'}` : 'No mood logged today'}
+          </p>
+          <p className="growth-days">
+            {moods.length} day{moods.length !== 1 ? 's' : ''} of growth
+          </p>
         </div>
 
         <div className="card garden-card">
@@ -32,9 +81,15 @@ function DashBoardHome() {
           <a href="#">Manage Habits</a>
         </div>
         <div className="habits-list">
-          <div className="habit">💧 Drink Water <span className="progress">5/8</span></div>
-          <div className="habit">🚶 Daily Walk <input type="checkbox" defaultChecked /></div>
-          <div className="habit">🧘‍♀️ Meditate <input type="checkbox" /></div>
+          {habits.map((habit) => {
+            const log = logs.find((l) => l.habitId === habit.id);
+            const isCompleted = log?.completed || false;
+            return (
+              <div key={habit.id} className="habit">
+                {habit.title} <input type="checkbox" checked={isCompleted} readOnly />
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -49,21 +104,13 @@ function DashBoardHome() {
           <h3>Recent Journal Entries</h3>
           <a href="#">View All</a>
         </div>
-        <div className="entry">
-          <p className="entry-date">January 15, 2025</p>
-          <p className="entry-snippet">Today was a good day. I managed to complete my morning routine and felt more energized throughout...</p>
-          <span className="emoji">😊</span>
-        </div>
-        <div className="entry">
-          <p className="entry-date">January 14, 2025</p>
-          <p className="entry-snippet">Feeling neutral today. Work was busy but I made sure to take breaks and practice mindfulness...</p>
-          <span className="emoji">😌</span>
-        </div>
-        <div className="entry">
-          <p className="entry-date">January 13, 2025</p>
-          <p className="entry-snippet">Great day! Had a wonderful conversation with a friend and completed my meditation session...</p>
-          <span className="emoji">😁</span>
-        </div>
+        {Array.isArray(entries) && entries.slice(0, 3).map((entry) => (
+            <div key={entry.id} className="entry">
+                <p className="entry-date">{new Date(entry.date).toLocaleDateString()}</p>
+                <p className="entry-snippet">{entry.body?.slice(0, 100)}...</p>
+                <span className="emoji">{entry.emoji || '📝'}</span>
+            </div>
+        ))}
       </section>
     </div>
   );

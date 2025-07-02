@@ -1,6 +1,5 @@
-// components/HabitForm.jsx
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../api/axiosInstance.js';
 import './Habit.css';
 
 function HabitForm({ editingHabit, onSuccess, clearEdit }) {
@@ -17,25 +16,20 @@ function HabitForm({ editingHabit, onSuccess, clearEdit }) {
     }
   }, [editingHabit]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    try {
-      if (editingHabit) {
-        await axios.put(`http://localhost:3001/api/habits/${editingHabit.id}`, {
-          title,
-          description,
-        });
-      } else {
-        await axios.post('http://localhost:3001/api/habits', {
-          title,
-          description,
-        });
-      }
-      onSuccess(); // Refresh the habit list
-      clearEdit(); // Clear editing state
-    } catch (error) {
-      console.error('Error saving habit:', error);
-    }
+    const request = editingHabit
+      ? axios.put(`/api/habits/${editingHabit.id}`, { title, description })
+      : axios.post('/api/habits', { title, description });
+
+    request
+      .then(() => {
+        onSuccess();
+        clearEdit();
+      })
+      .catch((error) => {
+        console.error('Error saving habit:', error);
+      });
   };
 
   return (

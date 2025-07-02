@@ -27,7 +27,8 @@ model User {
   journalEntries JournalEntry[]
   moods          Mood[]
   habits         Habit[]
-
+  plantGrowth    PlantGrowth?
+  habitLogs      HabitLog[]
 
 }
 
@@ -51,12 +52,14 @@ model JournalEntry {
 model Mood {
   id        String   @id @default(uuid())
   value     Int // 0-5 scale (e.g. 5 = happy, 1 = sad, etc.)
+  date DateTime @default(now())
   createdAt DateTime @default(now())
 
   //Relationships
   userId String
   user   User   @relation(fields: [userId], references: [id])
   journalEntry JournalEntry? @relation("JournalMood")
+  @@unique([userId, date])
 
 }
 
@@ -73,5 +76,30 @@ model Habit {
   //Relationships
   userId String
   user   User   @relation(fields: [userId], references: [id])
+  logs        HabitLog[]
 
+}
+
+// HABIT LOG MODEL
+model HabitLog {
+  id        String   @id @default(uuid())
+  date      DateTime
+  completed Boolean  @default(false)
+
+  habitId   String
+  habit     Habit    @relation(fields: [habitId], references: [id])
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+
+//PLANT GROWTH MODEL
+model PlantGrowth {
+  id        String   @id @default(uuid())
+  level     Int      @default(0) // ranges 0–5
+  updatedAt DateTime @updatedAt
+
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
 }

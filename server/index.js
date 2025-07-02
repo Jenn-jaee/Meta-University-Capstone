@@ -34,12 +34,20 @@ const authRoutes = require('./routes/auth');
 const journalRoutes = require('./routes/journal');
 const checkAuth = require('./middleware/checkAuth');
 const habitRoutes = require('./routes/habit');
+const habitLogsRouter = require('./routes/habitLogs');
+const moodsRoutes = require('./routes/moods');
+
+
 
 
 
 app.use('/api/auth', authRoutes);
 app.use('/api', checkAuth, journalRoutes);
 app.use('/api/habits', habitRoutes);
+app.use('/api/habit-logs', habitLogsRouter);
+app.use('/api/moods', moodsRoutes);
+
+
 
 
 //Test route

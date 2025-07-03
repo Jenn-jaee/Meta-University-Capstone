@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from '../api/axiosInstance.js';
 import JournalForm from '../components/JournalForm.jsx';
 import JournalList from '../components/JournalList.jsx';
-import { STATUS } from '../constants/statusCodes.js';
+import { STATUS } from '../api/axiosInstance.js';
+
 import '../components/Journal.css';
 
 function JournalPage() {
@@ -18,7 +19,7 @@ function JournalPage() {
       navigate('/');
       return;
     }
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    // axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     fetchEntries();
   }, [navigate]);
 

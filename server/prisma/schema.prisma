@@ -19,7 +19,9 @@ model User {
   email        String         @unique
   password     String?
   googleId     String?        @unique
-  name         String?
+  name         String?        //full name
+  displayName  String?        //display name for dashboard
+  hasSeenWelcome Boolean      @default(false)
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
 
@@ -27,7 +29,7 @@ model User {
   journalEntries JournalEntry[]
   moods          Mood[]
   habits         Habit[]
-  plantGrowth    PlantGrowth?
+  plantGrowths    PlantGrowth[]
   habitLogs      HabitLog[]
 
 }

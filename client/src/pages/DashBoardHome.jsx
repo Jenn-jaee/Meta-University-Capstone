@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../api/axiosInstance';
+import WelcomeModal from '../components/WelcomeModal';
 import './DashboardHome.css';
 
 function DashBoardHome() {
@@ -11,6 +12,27 @@ function DashBoardHome() {
   const [logs, setLogs] = useState([]);
   const [entries, setEntries] = useState([]);
   const navigate = useNavigate();
+  const [displayName, setDisplayName] = useState('');
+  const [hasSeenWelcome, setHasSeenWelcome] = useState(false);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+    try {
+      const res = await axios.get('/api/user/me');
+      const user = res.data;
+      setDisplayName(user.displayName || '');
+      setHasSeenWelcome(user.hasSeenWelcome || false);
+      if (!user.displayName || !user.hasSeenWelcome) {
+      setShowWelcomeModal(true);
+      }
+      } catch (err) {
+        console.error('Failed to fetch user profile:', err);
+      }
+    };
+    fetchUser();
+  }, []);
+
 
   useEffect(() => {
     fetchMoods();
@@ -18,6 +40,22 @@ function DashBoardHome() {
     fetchLogs();
     fetchEntries();
   }, []);
+
+  const handleSaveDisplayName = async (name) => {
+    try {
+      const res = await axios.patch('/api/user/profile', {
+      displayName: name,
+      hasSeenWelcome: true,
+      });
+
+      setDisplayName(res.data.displayName);
+      setHasSeenWelcome(true);
+      setShowWelcomeModal(false);
+    } catch (err) {
+      console.error('Failed to save display name:', err);
+    }
+  };
+
 
   const fetchMoods = () => {
     axios.get('/api/moods')
@@ -49,11 +87,15 @@ function DashBoardHome() {
       .catch((err) => console.error('Error fetching entries:', err));
   };
 
+
   return (
     <div className="dashboard-home-container">
       <header className="dashboard-header">
-        <h2>Hi Jennifer 👋</h2>
-        <p>Welcome back to your wellness journey</p>
+        {displayName && hasSeenWelcome ? (
+          <h2>Welcome back to your wellness journey, {displayName} 👋</h2>
+        ) : (
+          <h2>Hi {displayName || 'there'} 👋 Welcome to your wellness journey</h2>
+        )}
       </header>
 
       <section className="dashboard-section grid-two">
@@ -124,6 +166,7 @@ function DashBoardHome() {
             </div>
         ))}
       </section>
+      {showWelcomeModal && (<WelcomeModal onSave={handleSaveDisplayName} />)}
     </div>
   );
 }

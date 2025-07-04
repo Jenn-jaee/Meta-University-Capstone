@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../api/axiosInstance.js';
-import { BASE_URL } from '../constants/statusCodes.js';
+import { BASE_URL } from '../api/axiosInstance.js';
 import './SignIn.css';
 
 function SignIn() {

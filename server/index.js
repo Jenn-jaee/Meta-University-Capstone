@@ -36,6 +36,7 @@ const checkAuth = require('./middleware/checkAuth');
 const habitRoutes = require('./routes/habit');
 const habitLogsRouter = require('./routes/habitLogs');
 const moodsRoutes = require('./routes/moods');
+const userRouter = require('./routes/user');
 
 
 
@@ -46,6 +47,7 @@ app.use('/api', checkAuth, journalRoutes);
 app.use('/api/habits', habitRoutes);
 app.use('/api/habit-logs', habitLogsRouter);
 app.use('/api/moods', moodsRoutes);
+app.use('/api/user', userRouter);
 
 
 

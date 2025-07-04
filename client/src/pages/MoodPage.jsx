@@ -6,4 +6,4 @@ function MoodPage() {
     );
   }
 
-  export default MoodPage; //
+  export default MoodPage;

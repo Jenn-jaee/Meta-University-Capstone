@@ -1,10 +1,9 @@
-/* SignIn Container */
 .signin-container {
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #cdc1ff 0%, #ffccea 100%)
   }
 
   .signin-box {
@@ -23,7 +22,6 @@
     font-size: 2rem;
   }
 
-  /* Error Message */
   .error-message {
     background-color: #fee;
     color: #c00;
@@ -34,7 +32,6 @@
     border: 1px solid #fcc;
   }
 
-  /* Form Styles */
   .signin-form {
     display: flex;
     flex-direction: column;
@@ -72,7 +69,6 @@
     background-color: #5a67d8;
   }
 
-  /* Divider */
   .divider {
     text-align: center;
     margin: 1.5rem 0;
@@ -98,7 +94,6 @@
     right: 0;
   }
 
-  /* Google Button */
   .google-link {
     text-decoration: none;
     width: 100%;
@@ -130,7 +125,6 @@
     font-size: 1.2rem;
   }
 
-  /* Toggle Link */
   .toggle-section {
     text-align: center;
     margin-top: 1.5rem;

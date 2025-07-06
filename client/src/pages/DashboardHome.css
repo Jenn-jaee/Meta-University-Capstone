@@ -148,3 +148,16 @@
     top: 1rem;
     font-size: 1.2rem;
   }
+
+  .disabled-tile {
+  pointer-events: auto; /* let it be clickable */
+  opacity: 0.6;
+  cursor: not-allowed;
+  position: relative;
+  transition: 0.2s ease;
+}
+
+.dashboard-tile:hover {
+  zoom: normal;
+  transition: 0.2s ease;
+}

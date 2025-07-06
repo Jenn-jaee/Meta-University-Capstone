@@ -31,7 +31,7 @@ model User {
   habits         Habit[]
   plantGrowths    PlantGrowth[]
   habitLogs      HabitLog[]
-
+  moodLogs       MoodLog[]
 }
 
 //JournalEntry model - stores daily journal entries
@@ -64,6 +64,19 @@ model Mood {
   @@unique([userId, date])
 
 }
+
+model MoodLog {
+  id        String   @id @default(uuid())
+  mood      Int
+  note      String?  // user’s optional guided response
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+}
+
 
 //Habit model - tracks daily habits
 model Habit {

@@ -113,6 +113,7 @@ model HabitLog {
 model PlantGrowth {
   id        String   @id @default(uuid())
   level     Int      @default(0) // ranges 0–5
+  lastGrowthDate DateTime?             // date when plant last grew
   updatedAt DateTime @updatedAt
 
   userId    String   @unique

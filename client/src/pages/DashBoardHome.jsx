@@ -1,5 +1,5 @@
 // pages/DashBoardHome.jsx
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../api/axiosInstance';
 import WelcomeModal from '../components/WelcomeModal';
@@ -41,6 +41,32 @@ function DashBoardHome() {
     };
     fetchUser();
   }, []);
+
+  useEffect(() => {
+  const fetchPlantGrowth = async () => {
+    const token = localStorage.getItem('token');
+
+    try {
+      const res = await axios.get('/api/plant-growth/me', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      console.log('Full API response:', res);
+      console.log('Response data:', res.data);
+      console.log('Available properties:', Object.keys(res.data || {}));
+
+      setPlantStage(res.data.stage || 1);
+      console.log('Current plant stage:', res.data.stage);
+    } catch (err) {
+      console.error('Failed to fetch plant growth:', err);
+    }
+  };
+
+  fetchPlantGrowth(); // call on mount
+}, []);
+
 
   useEffect(() => {
     if (userId) {

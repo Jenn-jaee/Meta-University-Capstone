@@ -65,4 +65,24 @@ router.post('/grow', async (req, res) => {
   }
 });
 
+// GET /api/plant-growth/me
+router.get('/me', async (req, res) => {
+  try {
+    const growth = await prisma.plantGrowth.findFirst({
+      where: { userId: req.userId },
+    });
+
+    // If no growth record exists, return a default structure
+    if (!growth) {
+      return res.json({ stage: 1, lastGrowthDate: null });
+    }
+
+    res.json(growth || {});
+  } catch (error) {
+    console.error('Error fetching plant growth:', error);
+    res.status(500).json({ error: 'Failed to fetch plant growth' });
+  }
+});
+
+
 module.exports = router;

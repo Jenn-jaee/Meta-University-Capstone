@@ -273,8 +273,8 @@ const checkAndGrowPlant = async () => {
 
       <section className="dashboard-section quick-actions">
         <div className="action-tile">📝 Add Journal Entry</div>
-        <div className="action-tile">📊 Log Mood</div>
-        <div className="action-tile">✅ Track Habits</div>
+        <div className="action-tile">📊 View Mood Trends</div>
+        <div className="action-tile">✅ View Habits</div>
       </section>
 
       <section className="dashboard-section recent-entries">

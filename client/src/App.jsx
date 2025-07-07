@@ -6,11 +6,13 @@ import JournalPage from './pages/JournalPage';
 import HabitPage from './pages/HabitPage';
 import MoodPage from './pages/MoodPage';
 import AuthSuccess from './pages/AuthSuccess';
+import WelcomePage from './pages/WelcomePage';
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<SignIn />} />
+        <Route path="/" element={<WelcomePage />} />
+        <Route path="/signin" element={<SignIn />} />
         <Route path="/auth-success" element={<AuthSuccess />} />
 
         <Route path="/dashboard" element={<DashboardLayout />}>

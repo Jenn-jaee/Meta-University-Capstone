@@ -1,53 +1,74 @@
-import React, { useState } from 'react';
-import axiosInstance from '../api/axiosInstance.js';
+import React, { useState, useEffect } from 'react';
+import axios from '../api/axiosInstance';
 import './Habit.css';
 
-function HabitItem({ habit, onEdit, onDelete, onToggle, isCompleted }) {
-    const [streak, setStreak] = useState(habit.streak);
+function HabitItem({ habit, isCompleted, onEdit, onDelete, onToggle }) {
+const [streak, setStreak] = useState(habit.streak || 0);
+const [lastCompletedDate, setLastCompletedDate] = useState(habit.lastCompletedDate || null);
+const [toggleDisabled, setToggleDisabled] = useState(false);
 
-    const handleToggle = () => {
-    const newStatus = !isCompleted;
+useEffect(() => {
+// Check if last completed date is today
+const today = new Date().toISOString().split('T')[0];
+const lastDate = lastCompletedDate?.split('T')[0];
+setToggleDisabled(lastDate === today);
+}, [lastCompletedDate]);
 
-    // Optimistically update streak
-    setStreak((prev) => newStatus ? prev + 1 : Math.max(prev - 1, 0));
+const handleToggle = () => {
+if (toggleDisabled) return; // prevent multiple streak increases per day
 
-    axiosInstance
-    .post('/api/habit-logs', {
-    habitId: habit.id,
-    completed: newStatus,
-    })
-    .then(() => {
-    if (onToggle) onToggle(habit.id, isCompleted);
-    })
-    .catch((error) => {
-    console.error('Error logging habit completion:', error);
-    setStreak((prev) => newStatus ? prev - 1 : prev + 1); // revert streak
-    });
-    };
+const newStatus = !isCompleted;
 
-    return (
-    <div className="habit-card">
-    <div className="habit-header">
-    <h3>{habit.title}</h3>
-    <label className="toggle-switch">
-    <input
-    type="checkbox"
-    checked={isCompleted}
-    onChange={handleToggle}
-    />
-    <span className="slider"></span>
-    </label>
-    </div>
-    {habit.description && <p>{habit.description}</p>}
-    <p className="habit-meta">
-    Streak: {streak} | {habit.isActive ? 'Active' : 'Inactive'}
-    </p>
-    <div className="habit-actions">
-    <button onClick={() => onEdit(habit)}>Edit</button>
-    <button onClick={() => onDelete(habit.id)}>Delete</button>
-    </div>
-    </div>
-    );
-    }
+axios.post('/api/habit-logs', {
+habitId: habit.id,
+completed: newStatus,
+})
+.then((res) => {
+const today = new Date().toISOString().split('T')[0];
+
+if (newStatus) {
+// Only increment if last update wasn't today
+const last = lastCompletedDate?.split('T')[0];
+if (last !== today) {
+setStreak((prev) => prev + 1);
+}
+setLastCompletedDate(new Date().toISOString());
+setToggleDisabled(true);
+} else {
+// Turning off today won't decrement streak
+setToggleDisabled(false);
+}
+
+onToggle(habit.id, newStatus);
+})
+.catch((err) => {
+console.error('Error toggling habit:', err);
+});
+};
+
+return (
+<div className="habit-card">
+<div className="habit-header">
+<h3>{habit.title}</h3>
+<label className="toggle-switch">
+<input
+type="checkbox"
+checked={isCompleted}
+onChange={handleToggle}
+/>
+<span className="slider"></span>
+</label>
+</div>
+{habit.description && <p>{habit.description}</p>}
+<p className="habit-meta">
+Streak: {streak} — {habit.isActive ? 'Active' : 'Inactive'}
+</p>
+<div className="habit-actions">
+<button onClick={() => onEdit(habit)}>Edit</button>
+<button onClick={() => onDelete(habit.id)}>Delete</button>
+</div>
+</div>
+);
+}
 
 export default HabitItem;

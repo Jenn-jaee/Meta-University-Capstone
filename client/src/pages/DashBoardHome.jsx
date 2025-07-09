@@ -57,29 +57,13 @@ function DashBoardHome() {
   // Fetches today's mood log (if already submitted)
   const fetchTodayMood = async () => {
     try {
-      const res = await axios.get('/api/mood-logs/today');
-      setTodayMood(res.data);
-    } catch (err) {
-      setTodayMood(null);
-    }
-  };
+      const res = await axios.get('/api/plant-growth/me', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
 
-  // Fetches current plant stage for garden view
-  const fetchPlantStage = async () => {
-    try {
-      const res = await axios.get('/api/plant-growth/me');
-      setPlantStage(res.data.level || 1); // update to use level
-    } catch (err) {
-      console.error('Error fetching plant stage:', err);
-    }
-  };
-
-
-  // Fetches all user habits
-  const fetchHabits = async () => {
-    try {
-      const res = await axios.get('/api/habits');
-      setHabits(res.data);
+      setPlantStage(res.data.stage || 1);
     } catch (err) {
       console.error('Error fetching habits:', err);
     }

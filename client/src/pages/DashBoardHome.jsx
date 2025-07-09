@@ -54,6 +54,7 @@ function DashBoardHome() {
     }
   };
 
+
   // Fetches today's mood log (if already submitted)
   const fetchTodayMood = async () => {
     try {
@@ -69,6 +70,7 @@ function DashBoardHome() {
     try {
       const res = await axios.get('/api/plant-growth/me');
       setPlantStage(res.data.level || 1); // update to use level
+
     } catch (err) {
       console.error('Error fetching plant stage:', err);
     }
@@ -187,7 +189,10 @@ function DashBoardHome() {
 
         <div className="card garden-card">
           <h3>Your Garden</h3>
+
           <PlantGrid stage={plantStage} />
+
+    
         </div>
       </section>
 

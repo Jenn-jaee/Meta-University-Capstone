@@ -1,4 +1,4 @@
-// routes/moodLogs.js
+
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const checkAuth = require('../middleware/checkAuth');
@@ -8,7 +8,6 @@ const prisma = new PrismaClient();
 
 router.use(checkAuth);
 
-// POST /api/mood-logs
 // POST /api/mood-logs
 router.post('/', async (req, res) => {
   try {
@@ -53,8 +52,7 @@ router.post('/', async (req, res) => {
 });
 
 
-// moodLogs.js
-
+// GET /api/mood-logs/today
 router.get('/today', async (req, res) => {
   try {
     const today = new Date();

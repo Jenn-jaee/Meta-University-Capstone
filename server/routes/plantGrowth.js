@@ -1,11 +1,13 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const checkAuth = require('../middleware/checkAuth');
+
 const router = express.Router();
 const prisma = new PrismaClient();
 
 router.use(checkAuth);
 
+// POST /api/plant-growth/grow
 router.post('/grow', async (req, res) => {
   const userId = req.userId;
 
@@ -13,76 +15,73 @@ router.post('/grow', async (req, res) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const twoDaysAgo = new Date();
-    twoDaysAgo.setDate(today.getDate() - 1);
-    twoDaysAgo.setHours(0, 0, 0, 0);
+    // Fetch the plant growth record
+    let growth = await prisma.plantGrowth.findUnique({ where: { userId } });
 
-    const recentMoods = await prisma.moodLog.findMany({
-      where: {
-        userId,
-        createdAt: { gte: twoDaysAgo },
-      },
-      orderBy: { createdAt: 'asc' },
-    });
-
-    if (recentMoods.length < 2) {
-      return res.json({ grown: false });
+    // If no record exists, create a new one starting at level 1 (index 0 visually)
+    if (!growth) {
+      growth = await prisma.plantGrowth.create({
+        data: {
+          user: { connect: { id: userId } },
+          level: 1, // same as stage 1, index 0
+          lastGrowthDate: null,
+        },
+      });
     }
 
-    let growth = await prisma.plantGrowth.findUnique({
-      where: { userId },
-    });
+    // Prevent growing more than once per day
+    const alreadyGrewToday =
+      growth.lastGrowthDate &&
+      new Date(growth.lastGrowthDate).toDateString() === today.toDateString();
 
-    const lastGrowthDate = growth?.lastGrowthDate
-      ? new Date(growth.lastGrowthDate)
-      : null;
-
-    const hasGrownToday = lastGrowthDate?.toDateString() === today.toDateString();
-
-    if (hasGrownToday) {
-      return res.json({ grown: false });
+    if (alreadyGrewToday) {
+      return res.json({
+        grown: false,
+        level: growth.level,
+        message: 'Already grew today',
+      });
     }
 
-    const nextStage = growth ? Math.min(growth.stage + 1, 6) : 1;
+    // Increase level by 1, but cap it at 6 (6 stages total)
+    const nextLevel = Math.min(growth.level + 1, 6);
 
-    await prisma.plantGrowth.upsert({
+    await prisma.plantGrowth.update({
       where: { userId },
-      update: {
-        stage: nextStage,
-        lastGrowthDate: today,
-      },
-      create: {
-        user: { connect: { id: userId } },
-        stage: 1,
+      data: {
+        level: nextLevel,
         lastGrowthDate: today,
       },
     });
 
-    return res.json({ grown: true });
+    return res.json({ grown: true, level: nextLevel });
   } catch (err) {
     console.error('Error growing plant:', err);
-    res.status(500).json({ error: 'Failed to grow plant' });
+    return res.status(500).json({ error: 'Failed to grow plant' });
   }
 });
 
 // GET /api/plant-growth/me
 router.get('/me', async (req, res) => {
   try {
-    const growth = await prisma.plantGrowth.findFirst({
+    const growth = await prisma.plantGrowth.findUnique({
       where: { userId: req.userId },
     });
 
-    // If no growth record exists, return a default structure
+    // If no record, default to level 1 (stage 1 = index 0)
     if (!growth) {
-      return res.json({ stage: 1, lastGrowthDate: null });
+      return res.json({ level: 1, lastGrowthDate: null });
+    } else {
+        res.json({
+            level: growth.level,
+            lastGrowthDate: growth.lastGrowthDate,
+        });
     }
 
-    res.json(growth || {});
-  } catch (error) {
-    console.error('Error fetching plant growth:', error);
+    res.json(growth);
+  } catch (err) {
+    console.error('Error fetching plant growth:', err);
     res.status(500).json({ error: 'Failed to fetch plant growth' });
   }
 });
-
 
 module.exports = router;

@@ -76,6 +76,9 @@ router.get('/me', async (req, res) => {
     if (!growth) {
       return res.json({ stage: 1, lastGrowthDate: null });
     }
+    else{
+        res.json(growth);
+    }
 
     res.json(growth || {});
   } catch (error) {

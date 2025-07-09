@@ -1,4 +1,3 @@
-// routes/moodLogs.js
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const checkAuth = require('../middleware/checkAuth');
@@ -8,7 +7,6 @@ const prisma = new PrismaClient();
 
 router.use(checkAuth);
 
-// POST /api/mood-logs
 // POST /api/mood-logs
 router.post('/', async (req, res) => {
   try {
@@ -53,25 +51,30 @@ router.post('/', async (req, res) => {
 });
 
 
-// GET /api/mood-logs
-router.get('/', async (req, res) => {
+// GET /api/mood-logs/today
+router.get('/today', async (req, res) => {
   try {
-    const moodLogs = await prisma.moodLog.findMany({
-      where: { userId: req.userId },
-      orderBy: { createdAt: 'asc' }, // oldest to newest
-      select: {
-        mood: true,
-        createdAt: true
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const mood = await prisma.moodLog.findFirst({
+      where: {
+        userId: req.userId,
+        createdAt: {
+          gte: today
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
       }
     });
 
-    res.json(moodLogs);
-  } catch (error) {
-    console.error('Error fetching mood logs:', error);
-    res.status(500).json({ error: 'Failed to fetch mood logs' });
+    res.json(mood || null);
+  } catch (err) {
+    console.error('Error fetching today’s mood log:', err);
+    res.status(500).json({ error: 'Failed to fetch mood log' });
   }
 });
-
 
 
 module.exports = router;

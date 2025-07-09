@@ -2,6 +2,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../api/axiosInstance';
+import WelcomeModal from '../components/WelcomeModal';
+import MoodModal from '../components/MoodModal';
+
 import './DashboardHome.css';
 
 function DashBoardHome() {
@@ -10,26 +13,86 @@ function DashBoardHome() {
   const [habits, setHabits] = useState([]);
   const [logs, setLogs] = useState([]);
   const [entries, setEntries] = useState([]);
+  const [userId, setUserId] = useState(null);
   const navigate = useNavigate();
+  const [displayName, setDisplayName] = useState('');
+  const [hasSeenWelcome, setHasSeenWelcome] = useState(false);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [showMoodModal, setShowMoodModal] = useState(false);
 
   useEffect(() => {
-    fetchMoods();
-    fetchHabits();
-    fetchLogs();
-    fetchEntries();
+    const fetchUser = async () => {
+      try {
+        const res = await axios.get('/api/user/me');
+        const user = res.data;
+        setUserId(user.id);
+        setDisplayName(user.displayName || '');
+        setHasSeenWelcome(user.hasSeenWelcome || false);
+        if (!user.displayName || !user.hasSeenWelcome) {
+          setShowWelcomeModal(true);
+        }
+      } catch (err) {
+        console.error('Failed to fetch user profile:', err);
+      }
+    };
+    fetchUser();
   }, []);
 
-  const fetchMoods = () => {
-    axios.get('/api/moods')
-      .then((res) => {
-        const all = res.data || [];
-        setMoods(all);
-        const today = new Date().toISOString().split('T')[0];
-        const todayEntry = all.find((m) => m.date.startsWith(today));
-        setTodayMood(todayEntry);
-      })
-      .catch((err) => console.error('Error fetching moods:', err));
+  useEffect(() => {
+    if (userId) {
+      fetchMoods();
+      fetchHabits();
+      fetchLogs();
+      fetchEntries();
+    }
+  }, [userId]);
+
+  const handleSaveDisplayName = async (name) => {
+    try {
+      const res = await axios.patch('/api/user/profile', {
+        displayName: name,
+        hasSeenWelcome: true,
+      });
+      setDisplayName(res.data.displayName);
+      setHasSeenWelcome(true);
+      setShowWelcomeModal(false);
+    } catch (err) {
+      console.error('Failed to save display name:', err);
+    }
   };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setUserId(null);
+    setDisplayName('');
+    setTodayMood(null);
+    setMoods([]);
+    setHabits([]);
+    setLogs([]);
+    setEntries([]);
+    navigate('/');
+  };
+
+  const fetchMoods = () => {
+  axios.get('/api/moods')
+    .then((res) => {
+      const all = res.data || [];
+      const today = new Date().toISOString().split('T')[0];
+
+      // Filter moods only for the current user
+      const userMoods = all.filter((m) => m.userId === userId);
+
+      // Check if user already submitted today
+      const todayEntry = userMoods.find((m) =>
+        m.date.startsWith(today)
+      );
+
+      setMoods(userMoods);
+      setTodayMood(todayEntry);
+    })
+    .catch((err) => console.error('Error fetching moods:', err));
+};
+
 
   const fetchHabits = () => {
     axios.get('/api/habits')
@@ -49,11 +112,30 @@ function DashBoardHome() {
       .catch((err) => console.error('Error fetching entries:', err));
   };
 
+  const handleMoodSubmit = (selectedMoodValue) => {
+    const token = localStorage.getItem('token');
+    axios.post('/api/mood-logs', {
+      moodValue: selectedMoodValue
+    }, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then((response) => {
+        console.log("Mood submitted successfully:", response.data);
+        fetchMoods(); // Refresh mood
+      })
+      .catch((error) => {
+        console.error("Failed to submit mood:", error);
+      });
+  };
+
   return (
     <div className="dashboard-home-container">
       <header className="dashboard-header">
-        <h2>Hi Jennifer 👋</h2>
-        <p>Welcome back to your wellness journey</p>
+        {displayName && hasSeenWelcome ? (
+          <h2>Welcome back to your wellness journey, {displayName} 👋</h2>
+        ) : (
+          <h2>Hi {displayName || 'there'} 👋 Welcome to your wellness journey</h2>
+        )}
       </header>
 
       <section className="dashboard-section grid-two">
@@ -68,6 +150,26 @@ function DashBoardHome() {
           <p className="growth-days">
             {moods.length} day{moods.length !== 1 ? 's' : ''} of growth
           </p>
+          <div
+            className={`dashboard-tile ${todayMood ? 'disabled-tile' : ''}`}
+            onClick={() => {
+              if (todayMood) {
+                alert("You’ve already checked in today 🌼 Come back tomorrow!");
+              } else {
+                setShowMoodModal(true);
+              }
+            }}
+            title={todayMood ? "You’ve already checked in today 🌼 Come back tomorrow!" : "Click to log your mood for today"}
+          >
+            <h3>Log Mood</h3>
+          </div>
+
+          {showMoodModal && (
+            <MoodModal
+              onClose={() => setShowMoodModal(false)}
+              onSubmitMood={handleMoodSubmit}
+            />
+          )}
         </div>
 
         <div className="card garden-card">
@@ -81,7 +183,7 @@ function DashBoardHome() {
         <div className="section-header">
           <h3>Today’s Habits</h3>
           <a onClick={() => navigate('/dashboard/habit')} className="link" style={{ cursor: 'pointer' }}>
-                Manage Habits
+            Manage Habits
           </a>
         </div>
         <div className="habits-list">
@@ -107,23 +209,25 @@ function DashBoardHome() {
         <div className="section-header">
           <h3>Recent Journal Entries</h3>
           <a onClick={() => navigate('/dashboard/journal')} className="link" style={{ cursor: 'pointer' }}>
-                View All
+            View All
           </a>
         </div>
         {Array.isArray(entries) && entries.slice(0, 3).map((entry) => (
-            <div key={entry.id} className="entry">
-                <p className="entry-date">
-                {new Date(entry.createdAt).toLocaleDateString()}
-                </p>
-                <p className="entry-snippet">
-                {entry.content?.slice(0, 100)}...
-                </p>
-                <span className="emoji">
-                {entry.mood?.emoji || '📝'}
-                </span>
-            </div>
+          <div key={entry.id} className="entry">
+            <p className="entry-date">
+              {new Date(entry.createdAt).toLocaleDateString()}
+            </p>
+            <p className="entry-snippet">
+              {entry.content?.slice(0, 100)}...
+            </p>
+            <span className="emoji">
+              {entry.mood?.emoji || '📝'}
+            </span>
+          </div>
         ))}
       </section>
+
+      {showWelcomeModal && (<WelcomeModal onSave={handleSaveDisplayName} />)}
     </div>
   );
 }

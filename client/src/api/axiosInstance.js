@@ -7,6 +7,7 @@ export const STATUS = {
     NOT_AUTHORIZED: 401,
     BAD_REQUEST: 400,
     SERVER_ERROR: 500,
+    DUPLICATE_ENTRY: 409,
   };
 
 const axiosInstance = axios.create({

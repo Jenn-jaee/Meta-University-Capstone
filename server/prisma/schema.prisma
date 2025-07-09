@@ -19,7 +19,9 @@ model User {
   email        String         @unique
   password     String?
   googleId     String?        @unique
-  name         String?
+  name         String?        //full name
+  displayName  String?        //display name for dashboard
+  hasSeenWelcome Boolean      @default(false)
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
 
@@ -27,9 +29,9 @@ model User {
   journalEntries JournalEntry[]
   moods          Mood[]
   habits         Habit[]
-  plantGrowth    PlantGrowth?
+  plantGrowths    PlantGrowth[]
   habitLogs      HabitLog[]
-
+  moodLogs       MoodLog[]
 }
 
 //JournalEntry model - stores daily journal entries
@@ -62,6 +64,19 @@ model Mood {
   @@unique([userId, date])
 
 }
+
+model MoodLog {
+  id        String   @id @default(uuid())
+  mood      Int
+  note      String?  // user’s optional guided response
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+}
+
 
 //Habit model - tracks daily habits
 model Habit {

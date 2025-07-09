@@ -171,7 +171,7 @@ function DashBoardHome() {
 
         <div className="card garden-card">
           <h3>Your Garden</h3>
-          <PlantGrid stage={plantStage} />
+            <PlantGrid stage={plantStage} />
         </div>
       </section>
 

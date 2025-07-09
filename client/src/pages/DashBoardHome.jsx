@@ -53,12 +53,7 @@ function DashBoardHome() {
         }
       });
 
-      console.log('Full API response:', res);
-      console.log('Response data:', res.data);
-      console.log('Available properties:', Object.keys(res.data || {}));
-
       setPlantStage(res.data.stage || 1);
-      console.log('Current plant stage:', res.data.stage);
     } catch (err) {
       console.error('Failed to fetch plant growth:', err);
     }

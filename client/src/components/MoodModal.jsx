@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from '../api/axiosInstance'; // adjust path if needed
+import axios from '../api/axiosInstance';
 import './MoodModal.css';
 
 function MoodModal({ onClose }) {

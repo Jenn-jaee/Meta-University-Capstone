@@ -1,9 +1,12 @@
 // pages/DashBoardHome.jsx
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../api/axiosInstance';
 import WelcomeModal from '../components/WelcomeModal';
 import MoodModal from '../components/MoodModal';
+import PlantGrid from '../components/PlantGrid';
+
+import { growPlant } from '../api/plantAPI';
 
 import './DashboardHome.css';
 
@@ -13,6 +16,7 @@ function DashBoardHome() {
   const [habits, setHabits] = useState([]);
   const [logs, setLogs] = useState([]);
   const [entries, setEntries] = useState([]);
+  const [plantStage, setPlantStage] = useState(1);
   const [userId, setUserId] = useState(null);
   const navigate = useNavigate();
   const [displayName, setDisplayName] = useState('');
@@ -39,11 +43,33 @@ function DashBoardHome() {
   }, []);
 
   useEffect(() => {
+  const fetchPlantGrowth = async () => {
+    const token = localStorage.getItem('token');
+
+    try {
+      const res = await axios.get('/api/plant-growth/me', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      setPlantStage(res.data.stage || 1);
+    } catch (err) {
+      console.error('Failed to fetch plant growth:', err);
+    }
+  };
+
+  fetchPlantGrowth(); // call on mount
+}, []);
+
+
+  useEffect(() => {
     if (userId) {
       fetchMoods();
       fetchHabits();
       fetchLogs();
       fetchEntries();
+      fetchPlantGrowth();
     }
   }, [userId]);
 
@@ -112,21 +138,62 @@ function DashBoardHome() {
       .catch((err) => console.error('Error fetching entries:', err));
   };
 
+  const fetchPlantGrowth = async () => {
+  try {
+    const res = await axios.get('/api/plant-growth/me');
+    setPlantStage(res.data.stage || 1);
+  } catch (err) {
+    console.error('Failed to fetch plant growth:', err);
+  }
+};
+
+
   const handleMoodSubmit = (selectedMoodValue) => {
-    const token = localStorage.getItem('token');
-    axios.post('/api/mood-logs', {
-      moodValue: selectedMoodValue
-    }, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then((response) => {
-        console.log("Mood submitted successfully:", response.data);
-        fetchMoods(); // Refresh mood
+  const token = localStorage.getItem('token');
+
+  axios.post('/api/mood-logs', {
+    mood: selectedMoodValue
+  }, {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+    .then((response) => {
+      console.log("Mood submitted successfully:", response.data);
+
+      // Grow plant after mood is successfully submitted
+      axios.post('/api/plant-growth/grow', {}, {
+        headers: { Authorization: `Bearer ${token}` }
       })
-      .catch((error) => {
-        console.error("Failed to submit mood:", error);
-      });
-  };
+        .then((res) => {
+          if (res.data.grown) {
+            console.log("🌿 Plant grew to the next stage!");
+          } else {
+            console.log("🌱 No plant growth today.");
+          }
+        })
+        .catch((err) => {
+          console.error("Error trying to grow plant:", err);
+        });
+
+      fetchMoods(); // Refresh today's mood
+    })
+    .catch((error) => {
+      console.error("Failed to submit mood:", error);
+    });
+};
+
+const checkAndGrowPlant = async () => {
+  try {
+    const res = await axios.post('/api/plant-growth/grow');
+    if (res.data.grown) {
+      console.log("🌱 Plant has grown!");
+    } else {
+      console.log("🌿 No growth yet, keep checking in!");
+    }
+  } catch (error) {
+    console.error('Error growing plant:', error);
+  }
+};
+
 
   return (
     <div className="dashboard-home-container">
@@ -174,8 +241,7 @@ function DashBoardHome() {
 
         <div className="card garden-card">
           <h3>Your Garden</h3>
-          <div className="chart-placeholder">🌱 Growing beautifully!</div>
-          <p className="growth-days">12 days of growth</p>
+            <PlantGrid stage={plantStage} />
         </div>
       </section>
 

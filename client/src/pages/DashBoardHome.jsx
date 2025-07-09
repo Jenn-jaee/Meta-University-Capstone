@@ -242,7 +242,6 @@ const checkAndGrowPlant = async () => {
         <div className="card garden-card">
           <h3>Your Garden</h3>
             <PlantGrid stage={plantStage} />
-          {/* <p className="growth-days">12 days of growth</p> */}
         </div>
       </section>
 

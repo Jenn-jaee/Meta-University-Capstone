@@ -13,9 +13,6 @@ app.use(express.json());
 
 app.use((req, res, next) => {
     console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
-    if (req.body && Object.keys(req.body).length > 0) {
-      console.debug('Request body:', req.body); //for debugging
-    }
     next();
 });
 
@@ -35,7 +32,6 @@ const journalRoutes = require('./routes/journal');
 const checkAuth = require('./middleware/checkAuth');
 const habitRoutes = require('./routes/habit');
 const habitLogsRouter = require('./routes/habitLogs');
-const moodsRoutes = require('./routes/moods');
 const userRouter = require('./routes/user');
 const moodLogsRoute = require('./routes/moodLogs');
 const plantGrowthRoutes = require('./routes/plantGrowth');
@@ -49,7 +45,6 @@ app.use('/api/auth', authRoutes);
 app.use('/api', checkAuth, journalRoutes);
 app.use('/api/habits', habitRoutes);
 app.use('/api/habit-logs', habitLogsRouter);
-app.use('/api/moods', moodsRoutes);
 app.use('/api/user', userRouter);
 app.use('/api/mood-logs', moodLogsRoute);
 app.use('/api/plant-growth', plantGrowthRoutes);

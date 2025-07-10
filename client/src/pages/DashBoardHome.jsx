@@ -5,6 +5,7 @@ import WelcomeModal from '../components/WelcomeModal';
 import MoodModal from '../components/MoodModal';
 import PlantGrid from '../components/PlantGrid';
 import { growPlant } from '../api/plantAPI';
+import { calculateMoodStreak } from './MoodPage';
 import './DashboardHome.css';
 
 function DashBoardHome() {
@@ -22,6 +23,8 @@ function DashBoardHome() {
   const [habits, setHabits] = useState([]);
   const [logs, setLogs] = useState([]);
   const [entries, setEntries] = useState([]);
+  const [moodLogs, setMoodLogs] = useState([]);
+  const [streak, setStreak] = useState(0);
 
   // Fetch user profile on initial load
   useEffect(() => {
@@ -38,6 +41,24 @@ function DashBoardHome() {
       fetchJournalEntries();
     }
   }, [displayName]);
+
+
+// Fetch all mood logs once, then calculate & store the current streak
+useEffect(() => {
+  const fetchMoodLogs = async () => {
+    try {
+      const res = await axios.get('/api/mood-logs');
+      setMoodLogs(res.data);
+      const calculated = calculateMoodStreak(res.data);
+      setStreak(calculated);
+    } catch (err) {
+      console.error('Error fetching mood logs:', err);
+    }
+  };
+
+  fetchMoodLogs();
+  }, []);   // runs only once when Dashboard mounts
+
 
   // Fetches user profile details
   const fetchUser = async () => {
@@ -139,8 +160,9 @@ function DashBoardHome() {
           </p>
 
           <p className="growth-days">
-            {todayMood ? '1 day of growth' : '0 days of growth'}
+            {streak > 0 ? `${streak} day${streak > 1 ? 's' : ''} of growth` : '0 days of growth'}
           </p>
+
 
           <div
             className={`dashboard-tile ${todayMood ? 'disabled-tile' : ''}`}

@@ -21,7 +21,7 @@ ChartJS.register(
   Legend
 );
 
-function calculateMoodStreak(moodLogs) {
+export function calculateMoodStreak(moodLogs) {
   if (!moodLogs || moodLogs.length === 0) return 0;
 
   const datesSet = new Set(

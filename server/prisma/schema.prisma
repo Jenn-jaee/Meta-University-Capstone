@@ -27,7 +27,6 @@ model User {
 
   //bidirectional relationship
   journalEntries JournalEntry[]
-  moods          Mood[]
   habits         Habit[]
   plantGrowths    PlantGrowth[]
   habitLogs      HabitLog[]
@@ -39,6 +38,7 @@ model JournalEntry {
   id        String   @id @default(uuid())
   title     String   @default("Untitled Entry")
   content   String
+  journalMood  Int?     // 0-5 scale for emoji, not tied to MoodLog
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 
@@ -46,24 +46,8 @@ model JournalEntry {
   userId String
   user   User   @relation(fields: [userId], references: [id])
 
-  mood   Mood?  @relation("JournalMood", fields: [moodId], references: [id]) // Optional mood
-  moodId    String?  @unique
 }
 
-//Mood model - tracks daily moods
-model Mood {
-  id        String   @id @default(uuid())
-  value     Int // 0-5 scale (e.g. 5 = happy, 1 = sad, etc.)
-  date DateTime @default(now())
-  createdAt DateTime @default(now())
-
-  //Relationships
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-  journalEntry JournalEntry? @relation("JournalMood")
-  @@unique([userId, date])
-
-}
 
 model MoodLog {
   id        String   @id @default(uuid())
@@ -113,6 +97,7 @@ model HabitLog {
 model PlantGrowth {
   id        String   @id @default(uuid())
   level     Int      @default(0) // ranges 0–5
+  lastGrowthDate DateTime?             // date when plant last grew
   updatedAt DateTime @updatedAt
 
   userId    String   @unique

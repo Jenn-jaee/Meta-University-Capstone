@@ -19,7 +19,7 @@ function JournalPage() {
       navigate('/');
       return;
     }
-    // axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
     fetchEntries();
   }, [navigate]);
 

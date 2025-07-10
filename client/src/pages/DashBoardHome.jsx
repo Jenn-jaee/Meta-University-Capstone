@@ -1,52 +1,113 @@
-// pages/DashBoardHome.jsx
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../api/axiosInstance';
 import WelcomeModal from '../components/WelcomeModal';
 import MoodModal from '../components/MoodModal';
-
+import PlantGrid from '../components/PlantGrid';
+import { growPlant } from '../api/plantAPI';
 import './DashboardHome.css';
 
 function DashBoardHome() {
-  const [moods, setMoods] = useState([]);
-  const [todayMood, setTodayMood] = useState(null);
-  const [habits, setHabits] = useState([]);
-  const [logs, setLogs] = useState([]);
-  const [entries, setEntries] = useState([]);
-  const [userId, setUserId] = useState(null);
   const navigate = useNavigate();
+
+  // State for user info and modals
   const [displayName, setDisplayName] = useState('');
   const [hasSeenWelcome, setHasSeenWelcome] = useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [showMoodModal, setShowMoodModal] = useState(false);
 
+  // State for dashboard data
+  const [todayMood, setTodayMood] = useState(null);
+  const [plantStage, setPlantStage] = useState(1);
+  const [habits, setHabits] = useState([]);
+  const [logs, setLogs] = useState([]);
+  const [entries, setEntries] = useState([]);
+
+  // Fetch user profile on initial load
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await axios.get('/api/user/me');
-        const user = res.data;
-        setUserId(user.id);
-        setDisplayName(user.displayName || '');
-        setHasSeenWelcome(user.hasSeenWelcome || false);
-        if (!user.displayName || !user.hasSeenWelcome) {
-          setShowWelcomeModal(true);
-        }
-      } catch (err) {
-        console.error('Failed to fetch user profile:', err);
-      }
-    };
     fetchUser();
   }, []);
 
+  // After user profile is loaded, fetch other data
   useEffect(() => {
-    if (userId) {
-      fetchMoods();
+    if (displayName !== '') {
+      fetchTodayMood();
+      fetchPlantStage();
       fetchHabits();
-      fetchLogs();
-      fetchEntries();
+      fetchHabitLogs();
+      fetchJournalEntries();
     }
-  }, [userId]);
+  }, [displayName]);
 
+  // Fetches user profile details
+  const fetchUser = async () => {
+    try {
+      const res = await axios.get('/api/user/me');
+      const user = res.data;
+      setDisplayName(user.displayName || '');
+      setHasSeenWelcome(user.hasSeenWelcome || false);
+      if (!user.displayName || !user.hasSeenWelcome) {
+        setShowWelcomeModal(true);
+      }
+    } catch (err) {
+      console.error('Error fetching user:', err);
+    }
+  };
+
+
+  // Fetches today's mood log (if already submitted)
+  const fetchTodayMood = async () => {
+    try {
+      const res = await axios.get('/api/mood-logs/today');
+      setTodayMood(res.data);
+    } catch (err) {
+      setTodayMood(null);
+    }
+  };
+
+  // Fetches current plant stage for garden view
+  const fetchPlantStage = async () => {
+    try {
+      const res = await axios.get('/api/plant-growth/me');
+      setPlantStage(res.data.level || 1); // update to use level
+
+    } catch (err) {
+      console.error('Error fetching plant stage:', err);
+    }
+  };
+
+
+  // Fetches all user habits
+  const fetchHabits = async () => {
+    try {
+      const res = await axios.get('/api/habits');
+      setHabits(res.data);
+    } catch (err) {
+      console.error('Error fetching habits:', err);
+    }
+  };
+
+  // Fetches today's habit logs (for checkbox display)
+  const fetchHabitLogs = async () => {
+    try {
+      const res = await axios.get('/api/habit-logs/today');
+      setLogs(res.data);
+    } catch (err) {
+      console.error('Error fetching habit logs:', err);
+    }
+  };
+
+  // Fetches user's journal entries for display
+  const fetchJournalEntries = async () => {
+    try {
+      const res = await axios.get('/api/journal');
+      setEntries(res.data);
+    } catch (err) {
+      console.error('Error fetching entries:', err);
+    }
+  };
+
+  // Updates user profile after saving name via welcome modal
   const handleSaveDisplayName = async (name) => {
     try {
       const res = await axios.patch('/api/user/profile', {
@@ -61,81 +122,26 @@ function DashBoardHome() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    setUserId(null);
-    setDisplayName('');
-    setTodayMood(null);
-    setMoods([]);
-    setHabits([]);
-    setLogs([]);
-    setEntries([]);
-    navigate('/');
-  };
-
-  const fetchMoods = () => {
-  axios.get('/api/moods')
-    .then((res) => {
-      const all = res.data || [];
-      const today = new Date().toISOString().split('T')[0];
-
-      // Filter moods only for the current user
-      const userMoods = all.filter((m) => m.userId === userId);
-
-      // Check if user already submitted today
-      const todayEntry = userMoods.find((m) =>
-        m.date.startsWith(today)
-      );
-
-      setMoods(userMoods);
-      setTodayMood(todayEntry);
-    })
-    .catch((err) => console.error('Error fetching moods:', err));
-};
-
-
-  const fetchHabits = () => {
-    axios.get('/api/habits')
-      .then((res) => setHabits(res.data))
-      .catch((err) => console.error('Error fetching habits:', err));
-  };
-
-  const fetchLogs = () => {
-    axios.get('/api/habit-logs/today')
-      .then((res) => setLogs(res.data))
-      .catch((err) => console.error('Error fetching logs:', err));
-  };
-
-  const fetchEntries = () => {
-    axios.get('/api/journal')
-      .then((res) => setEntries(res.data))
-      .catch((err) => console.error('Error fetching entries:', err));
-  };
-
-  const handleMoodSubmit = (selectedMoodValue) => {
-    const token = localStorage.getItem('token');
-    axios.post('/api/mood-logs', {
-      moodValue: selectedMoodValue
-    }, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then((response) => {
-        console.log("Mood submitted successfully:", response.data);
-        fetchMoods(); // Refresh mood
-      })
-      .catch((error) => {
-        console.error("Failed to submit mood:", error);
-      });
+  // Converts mood value (1-5) into matching emoji
+  const getMoodEmoji = (value) => {
+    const moodMap = {
+      1: '😢',
+      2: '😐',
+      3: '😊',
+      4: '😁',
+      5: '😄',
+    };
+    return moodMap[value] || '🙂';
   };
 
   return (
     <div className="dashboard-home-container">
       <header className="dashboard-header">
-        {displayName && hasSeenWelcome ? (
-          <h2>Welcome back to your wellness journey, {displayName} 👋</h2>
-        ) : (
-          <h2>Hi {displayName || 'there'} 👋 Welcome to your wellness journey</h2>
-        )}
+        <h2>
+          {displayName && hasSeenWelcome
+            ? `Welcome back to your wellness journey, ${displayName} 👋`
+            : `Hi ${displayName || 'there'} 👋 Welcome to your wellness journey`}
+        </h2>
       </header>
 
       <section className="dashboard-section grid-two">
@@ -145,21 +151,25 @@ function DashBoardHome() {
             <a href="#">View All</a>
           </div>
           <p className="mood-text">
-            {todayMood ? `${todayMood.emoji || '🙂'} ${todayMood.note || 'Logged'}` : 'No mood logged today'}
+            {todayMood
+              ? `${getMoodEmoji(todayMood.mood)} ${todayMood.note || 'Logged'}`
+              : 'No mood logged today'}
           </p>
+
           <p className="growth-days">
-            {moods.length} day{moods.length !== 1 ? 's' : ''} of growth
+            {todayMood ? '1 day of growth' : '0 days of growth'}
           </p>
+
           <div
             className={`dashboard-tile ${todayMood ? 'disabled-tile' : ''}`}
             onClick={() => {
-              if (todayMood) {
-                alert("You’ve already checked in today 🌼 Come back tomorrow!");
-              } else {
+              if (!todayMood) {
                 setShowMoodModal(true);
+              } else {
+                alert("You’ve already checked in today 🌼 Come back tomorrow!");
               }
             }}
-            title={todayMood ? "You’ve already checked in today 🌼 Come back tomorrow!" : "Click to log your mood for today"}
+            title={todayMood ? "You've already checked in today" : "Click to log your mood for today"}
           >
             <h3>Log Mood</h3>
           </div>
@@ -167,15 +177,22 @@ function DashBoardHome() {
           {showMoodModal && (
             <MoodModal
               onClose={() => setShowMoodModal(false)}
-              onSubmitMood={handleMoodSubmit}
+              onSuccess={async (newMood) => {
+                setTodayMood(newMood);   //update mood immediately
+                await growPlant();   // grow the plant after mood check-in
+                await fetchPlantStage(); //fetch plant stage
+                setShowMoodModal(false);
+              }}
             />
           )}
         </div>
 
         <div className="card garden-card">
           <h3>Your Garden</h3>
-          <div className="chart-placeholder">🌱 Growing beautifully!</div>
-          <p className="growth-days">12 days of growth</p>
+
+          <PlantGrid stage={plantStage} />
+
+    
         </div>
       </section>
 
@@ -227,7 +244,7 @@ function DashBoardHome() {
         ))}
       </section>
 
-      {showWelcomeModal && (<WelcomeModal onSave={handleSaveDisplayName} />)}
+      {showWelcomeModal && <WelcomeModal onSave={handleSaveDisplayName} />}
     </div>
   );
 }

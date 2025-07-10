@@ -10,6 +10,7 @@ function DashboardLayout() {
     navigate('/');
   };
 
+
   return (
     <div className="dashboard">
       {/* Top Header with all navigation links */}

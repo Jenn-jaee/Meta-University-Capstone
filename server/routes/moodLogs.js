@@ -76,5 +76,25 @@ router.get('/today', async (req, res) => {
   }
 });
 
+// GET /api/mood-logs
+router.get('/', async (req, res) => {
+  try {
+    const logs = await prisma.moodLog.findMany({
+      where: {
+        userId: req.userId
+      },
+      orderBy: {
+        createdAt: 'asc'
+      }
+    });
+
+    res.json(logs);
+  } catch (error) {
+    console.error('Error fetching mood logs:', error);
+    res.status(500).json({ error: 'Failed to fetch mood logs' });
+  }
+});
+
+
 
 module.exports = router;

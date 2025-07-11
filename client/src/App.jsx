@@ -1,3 +1,4 @@
+import { Toaster } from 'react-hot-toast';
 import SignIn from './components/signIn';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import DashboardLayout from './pages/DashboardLayout';
@@ -7,9 +8,11 @@ import HabitPage from './pages/HabitPage';
 import MoodPage from './pages/MoodPage';
 import AuthSuccess from './pages/AuthSuccess';
 import WelcomePage from './pages/WelcomePage';
+import SettingsPanel from './components/SettingsPanel.jsx';
 function App() {
   return (
     <Router>
+      <Toaster position="top-right" reverseOrder={false} />
       <Routes>
         <Route path="/" element={<WelcomePage />} />   
         <Route path="/signin" element={<SignIn />} />
@@ -19,6 +22,7 @@ function App() {
           <Route path="journal" element={<JournalPage />} />
           <Route path="habit" element={<HabitPage />} />
           <Route path="mood" element={<MoodPage />} />
+          <Route path="settings" element={<SettingsPanel />} />
         </Route>
       </Routes>
     </Router>

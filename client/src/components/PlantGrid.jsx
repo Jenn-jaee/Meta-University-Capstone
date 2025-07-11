@@ -6,7 +6,7 @@ const plantStages = [
   '/plantStages/plantstage-0.svg',
   '/plantStages/plantstage-1.svg',
   '/plantStages/plantstage-2.svg',
-  '/plantStages/plantstage-3.svg',
+  '/plantStages/plantstage-3-com.svg',
   '/plantStages/plantstage-4.svg',
   '/plantStages/plantstage-5.svg',
 ];

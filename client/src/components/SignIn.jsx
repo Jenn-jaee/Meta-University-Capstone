@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../api/axiosInstance.js';
 import { BASE_URL } from '../api/axiosInstance.js';
+import { useEffect } from 'react';
+import { setDarkMode } from '../utils/ThemeManager.js';
 import './SignIn.css';
 
 function SignIn() {
@@ -11,6 +13,10 @@ function SignIn() {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setDarkMode(false);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

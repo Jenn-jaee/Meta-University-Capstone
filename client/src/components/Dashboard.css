@@ -1,7 +1,7 @@
 /* Dashboard Container */
 .dashboard {
   min-height: 100vh;
-  background: linear-gradient(135deg, #A294F9, #CDC1FF);
+  background: var(--bg);                 /* follows light / dark theme */
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   transition: background 0.3s ease-in-out;
 }
@@ -11,10 +11,11 @@
   max-width: 1200px;
   margin: 2rem auto;
   padding: 2rem;
-  background-color: rgba(255, 255, 255, 0.85);
-  border-radius: 12px;
+  background: var(--panel-purple);
+  color: var(--fg);             border-radius: 12px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
 }
+
 
 /* Navigation Bar Under Header */
 .dashboard-nav {
@@ -54,7 +55,7 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #A294F9, #CDC1FF);
+  background: var(--bg);
 }
 
 .loading-spinner {
@@ -90,4 +91,43 @@
     align-items: center;
     gap: 1rem;
   }
+}
+
+/* Core card styling */
+.card,
+.habit,
+.entry,
+.action-tile {
+  background-color: var(--panel-purple);
+  color: var(--fg); /* use theme-aware text color */
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+  margin-bottom: 1rem;
+}
+
+/* Optional: style dashboard section blocks */
+.dashboard-section {
+  margin-top: 2rem;
+  padding: 1rem;
+}
+
+/* Optional: mood card tile */
+.dashboard-tile {
+  background-color: var(--panel-bg);
+  color: var(--fg);
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  text-align: center;
+  margin-top: 1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+.dashboard-tile:hover {
+  background-color: var(--accent);
+  color: var(--btn-fg);
+}
+.disabled-tile {
+  opacity: 0.5;
+  pointer-events: none;
 }

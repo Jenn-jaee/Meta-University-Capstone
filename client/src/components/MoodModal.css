@@ -1,10 +1,10 @@
+/* ───── MoodModal theme-aware styles ───── */
+
 .modal-backdrop {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.4);
+  inset: 0;
+  /* translucent dark veil that works for both themes */
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -12,14 +12,17 @@
 }
 
 .mood-modal {
-  background: #fff;
+  background: var(--panel-bg);     /* light → #fff ‖ dark → #1e1e1e  */
+  color:   var(--fg);              /* light → #213547 ‖ dark → #f5f7fa */
+  width: 480px;
   padding: 30px;
   border-radius: 15px;
-  width: 480px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-  font-family: 'Inter', sans-serif;
-  position: relative;
+  box-shadow:
+    0 8px 20px rgba(0,0,0,0.12),
+    0 0 0 1px var(--border, transparent); /* subtle 1-px ring in light mode */
   text-align: center;
+  backdrop-filter: blur(4px);      /* keeps background lavender from bleeding through */
+  font-family: 'Inter', sans-serif;
 }
 
 .mood-options {
@@ -28,66 +31,70 @@
   margin: 20px 0;
 }
 
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 75px;
+  margin-top: 20px;
+}
+
+
 .emoji-button {
-  background: #f1f1f1;
+  background: var(--panel-bg);
   border: 2px solid transparent;
   border-radius: 12px;
   padding: 10px 14px;
   font-size: 18px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: border-color 0.25s, background 0.25s;
+  color: var(--fg);
+}
+
+.emoji-button:hover {
+  background: rgba( var(--accent-rgb,108,92,231), 0.12);
 }
 
 .emoji-button.selected {
-  border-color: #7d4dbf;
-  background: #eee5ff;
+  border-color: var(--accent);          /* lavender ring */
+  background: rgba( var(--accent-rgb,108,92,231), 0.15);
 }
 
-.emoji-label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
+/* textarea adopts theme vars */
 textarea {
   width: 100%;
   height: 70px;
   padding: 10px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
   border-radius: 8px;
   margin-top: 15px;
   resize: none;
   font-size: 14px;
   font-family: 'Inter', sans-serif;
+  background: var(--input-bg);
+  color: var(--input-fg);
 }
 
-.modal-actions {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 20px;
-}
-
+/* action buttons */
 .submit-button {
-  background-color: #7d4dbf;
-  color: #fff;
+  background: var(--accent);
+  color: var(--btn-fg, #fff);
   padding: 10px 24px;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
-  transition: background 0.3s ease;
+  transition: background 0.25s;
 }
 
 .submit-button:hover {
-  background-color: #693cb1;
+  filter: brightness(0.9);
 }
 
 .cancel-button {
-  background: #eee;
-  color: #333;
+  background: var(--input-bg);
+  color: var(--fg);
   padding: 10px 20px;
-  border: none;
+  border: 1px solid var(--border);
   border-radius: 8px;
   cursor: pointer;
 }

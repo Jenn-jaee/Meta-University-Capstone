@@ -28,7 +28,7 @@ function JournalEntry({ entry, onEdit, onDelete }) {
   };
 
   return (
-    <div className="journal-entry">
+    <div className="journal-entry panel">
       <div className="entry-header">
         <div className="entry-title-section">
           <h3 className="entry-title">

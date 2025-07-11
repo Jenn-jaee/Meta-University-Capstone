@@ -54,7 +54,7 @@ function JournalForm({ onSubmit, editingEntry, onCancel }) {
   ];
 
   return (
-    <div className="journal-form-container">
+    <div className="journal-form-container panel">
       <h2 className="journal-form-title">
         {editingEntry ? 'Edit Entry' : 'New Journal Entry'}
       </h2>

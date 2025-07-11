@@ -1,109 +1,136 @@
-.avatar-preview {
-  margin-top: 10px;
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #ccc;
-}
-
-/* Slide-in container */
 .settings-panel {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 350px;
-  height: 100vh;
-  background-color: #fff;
-  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.15);
-  z-index: 999;
-  padding: 24px;
-  overflow-y: auto;
-  transition: transform 0.3s ease-in-out;
+  position: relative;
+  width: 420px;
+  height: 100%;
+  padding: 2rem 1.75rem;
+  background: var(--panel-bg);
+  overflow-y: auto;               /* scroll if content grows */
+  border-radius: 1rem;            /* softer corners */
+  box-shadow: 0 8px 24px var(--card-shadow);
 }
 
-/* Panel header */
-.settings-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.settings-header h2 {
-  font-size: 20px;
+.settings-panel h2 {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.25rem;
   font-weight: 600;
-  color: #333;
+  color: #1f2d3d;
+  position: relative;
+  padding-bottom: 0.75rem;
 }
 
-.settings-header button {
-  background: none;
+/* lavender underline accent */
+.settings-panel h2::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 28px;
+  height: 3px;
+  background: #6c5ce7;
+  border-radius: 9999px;
+}
+
+/* Close (X) button */
+.settings-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 1.25rem;
+  background: transparent;
   border: none;
-  font-size: 20px;
+  cursor: pointer;
+  color: var(--fg);
+  z-index: 1002;
+}
+
+
+.settings-close-btn:hover {
+  color: #111;
+}
+
+/* ========= ProfileInfoSection ========= */
+
+.profile-info {
+  display: flex;
+  gap: 2.25rem;          /* more breathing room */
+  align-items: flex-start;
+}
+
+/* Avatar */
+.profile-avatar {
+  width: 108px;
+  height: 108px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid #e5e7eb;
+}
+
+.change-photo-btn {
+  display: block;
+  margin-top: 0.85rem;
+  width: 108px;          /* align with avatar width */
+  padding: 0.45rem 0.8rem;
+  background: #6c5ce7;
+  border: none;
+  border-radius: 0.5rem;
+  color: #fff;
+  font-size: 0.75rem;
   cursor: pointer;
 }
 
-/* Form layout */
-.settings-form {
+.change-photo-btn:hover {
+  background: #5946d2;
+}
+
+/* Form fields */
+.profile-fields {
+  flex: 1;
+  max-width: 200px;      /* keep inputs narrow */
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 1.2rem;
+  min-width: 0;
 }
 
-.form-group {
+.profile-fields label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #374151;
   display: flex;
   flex-direction: column;
+  gap: 0.3rem;
 }
 
-.form-group label {
-  margin-bottom: 6px;
-  font-size: 14px;
-  color: #444;
+.profile-fields input {
+  padding: 0.45rem 0.6rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.45rem;
+  font-size: 0.85rem;
+  transition: border 0.2s;
 }
 
-input[type="text"],
-select {
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 14px;
-  background-color: #fdfdfd;
+.profile-fields input:focus {
+  outline: none;
+  border-color: #6c5ce7;
 }
 
-/* Checkbox label layout */
-.form-group input[type='checkbox'] {
-  margin-right: 8px;
-  transform: scale(1.1);
-}
-
-/* Avatar preview */
-.avatar-preview {
-  margin-top: 10px;
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #bbb;
+input[disabled] {
+  background: #f3f4f6;
+  color: #9ca3af;
 }
 
 /* Save button */
-.save-button {
-  margin-top: 10px;
-  padding: 10px;
-  background-color: #8e77f5;
-  color: white;
-  font-weight: 600;
+.save-btn {
+  width: max-content;
+  padding: 0.55rem 1.3rem;
+  background: #6c5ce7;
+  color: #fff;
   border: none;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  font-size: 0.85rem;
 }
 
-.save-button:hover {
-  background-color: #7c68dc;
+.save-btn:hover {
+  background: #5946d2;
 }
-
-/* .dashboard-blur {
-  filter: blur(2px);
-  pointer-events: none;
-} */

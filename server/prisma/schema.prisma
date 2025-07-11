@@ -22,6 +22,15 @@ model User {
   name         String?        //full name
   displayName  String?        //display name for dashboard
   hasSeenWelcome Boolean      @default(false)
+
+  phone          String?        // NEW optional phone number
+  avatarUrl      String?        // NEW profile photo URL
+
+
+  darkMode       Boolean  @default(false)
+  dailyReminders Boolean  @default(false)
+  privateJournal Boolean  @default(false)
+
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
 

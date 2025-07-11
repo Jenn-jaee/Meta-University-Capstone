@@ -1,138 +1,49 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from '../api/axiosInstance';
+import ProfileInfoSection from './settings/ProfileInfoSection';
+import PreferencesSection from './settings/PreferencesSection';
+
 import './SettingsPanel.css';
 
-const SettingsPanel = ({ show, onClose }) => {
-  const [profile, setProfile] = useState(null);
-
+function SettingsPanel() {
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+  /* ─── Fetch user once ─── */
   useEffect(() => {
-    if (show) {
-      fetchProfile();
-    }
-  }, [show]);
-
-  const fetchProfile = async () => {
-    try {
-      const response = await axios.get('/api/user/me');
-      setProfile(response.data);
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-    }
-  };
-
-  const handleSave = async () => {
-    try {
-      const response = await axios.patch('/api/user/profile', {
-        displayName: profile.displayName,
-        dailyReminders: profile.dailyReminders,
-        privateJournal: profile.privateJournal,
-        themePreference: profile.themePreference,
+    axios
+      .get('/api/user/me')
+      .then((res) => setUser(res.data))
+      .catch(() => {
       });
-      alert('Changes saved successfully!');
-      onClose(); // optional: close panel after save
-    } catch (err) {
-      console.error('Error updating profile:', err);
-      alert('Failed to save changes.');
-    }
-  };
+  }, []);
 
-  if (!show) return null;
+  if (!user) return null; // could be a spinner
 
   return (
-    <div className='dashboard-blur'>
-        <div className="settings-panel">
-        <div className="settings-header">
-            <h2>Settings</h2>
-            <button onClick={onClose}>X</button>
-        </div>
+    <div className="settings-panel">
+      {/* Close (X) button */}
+      <button
+        className="settings-close-btn"
+        aria-label="Close settings"
+        onClick={() => navigate('/dashboard')}
+      >
+        ×
+      </button>
 
-        {!profile ? (
-            <p>Loading...</p>
-        ) : (
-            <form className="settings-form">
-                <div className="form-group">
-                    <label htmlFor="avatarUrl">Profile Image URL</label>
-                    <input
-                        type="text"
-                        id="avatarUrl"
-                        value={profile.avatarUrl || ''}
-                        onChange={(e) =>
-                        setProfile({ ...profile, avatarUrl: e.target.value })
-                        }
-                    />
-                    {profile.avatarUrl && (
-                        <img
-                        src={profile.avatarUrl}
-                        alt="Profile Preview"
-                        className="avatar-preview"
-                        />
-                    )}
-                </div>
+      <h2>Account Information</h2>
 
-            <div className="form-group">
-                <label htmlFor="displayName">Display Name</label>
-                <input
-                type="text"
-                id="displayName"
-                value={profile.displayName || ''}
-                onChange={(e) =>
-                    setProfile({ ...profile, displayName: e.target.value })
-                }
-                />
-            </div>
+      <ProfileInfoSection
+        user={user}
+        onAvatarUpdate={(url) => setUser({ ...user, avatarUrl: url })}
+      />
 
-            <div className="form-group">
-                <label>
-                <input
-                    type="checkbox"
-                    checked={profile.dailyReminders || false}
-                    onChange={(e) =>
-                    setProfile({ ...profile, dailyReminders: e.target.checked })
-                    }
-                />
-                Enable Daily Reminders
-                </label>
-            </div>
-
-            <div className="form-group">
-                <label>
-                <input
-                    type="checkbox"
-                    checked={profile.privateJournal || false}
-                    onChange={(e) =>
-                    setProfile({ ...profile, privateJournal: e.target.checked })
-                    }
-                />
-                Keep Journal Private
-                </label>
-            </div>
-
-            <div className="form-group">
-                <label htmlFor="themePreference">Theme</label>
-                <select
-                id="themePreference"
-                value={profile.themePreference || 'light'}
-                onChange={(e) =>
-                    setProfile({ ...profile, themePreference: e.target.value })
-                }
-                >
-                <option value="light">Light</option>
-                <option value="dark">Dark</option>
-                </select>
-            </div>
-
-            <button
-                type="button"
-                onClick={handleSave}
-                className="save-button"
-            >
-                Save Changes
-            </button>
-            </form>
-        )}
-        </div>
+      <PreferencesSection
+        user={user}
+        onPrefsUpdate={(newPrefs) => setUser({ ...user, ...newPrefs })}
+      />
     </div>
   );
-};
+}
 
 export default SettingsPanel;

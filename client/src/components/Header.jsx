@@ -37,6 +37,16 @@ function Header({ onLogout }) {
           >
             Mood
           </NavLink>
+
+          <NavLink
+            to="settings"
+            className={({ isActive }) =>
+              isActive ? 'nav-button active settings-link' : 'nav-button settings-link'
+            }
+            title="Settings"
+          >
+            ⚙️ Settings
+          </NavLink>
           <button className="logout-button" onClick={onLogout}>
             Logout
           </button>

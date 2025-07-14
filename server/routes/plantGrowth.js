@@ -76,9 +76,6 @@ router.get('/me', async (req, res) => {
             lastGrowthDate: growth.lastGrowthDate,
         });
     }
-    else{
-        res.json(growth);
-    }
 
     res.json(growth);
   } catch (err) {

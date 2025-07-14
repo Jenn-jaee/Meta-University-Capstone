@@ -2,6 +2,7 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const checkAuth = require('../middleware/checkAuth');
+const { STATUS } = require('../constants');
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -9,65 +10,87 @@ const prisma = new PrismaClient();
 router.use(checkAuth);
 
 // POST /api/mood-logs
-router.post('/', async (req, res) => {
-  try {
-    const { mood, note } = req.body;
-    const userId = req.userId;
+router.post('/', (req, res) => {
+  const { mood, note } = req.body;
+  const userId = req.userId;
 
-    if (typeof mood !== 'number') {
-      return res.status(400).json({ error: 'Invalid mood value' });
-    }
+  if (typeof mood !== 'number') {
+    return res
+      .status(STATUS.BAD_REQUEST)
+      .json({ error: 'Invalid mood value' });
+  }
 
-    // Check if user has already logged mood today
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0);
+  // Check if a mood log already exists for today
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
 
-    const existingMood = await prisma.moodLog.findFirst({
+  prisma.moodLog
+    .findFirst({
       where: {
         userId,
+        createdAt: { gte: startOfDay },
+      },
+    })
+    .then((existingMood) => {
+      if (existingMood) {
+        return res
+          .status(STATUS.BAD_REQUEST)
+          .json({ error: "You've already checked in today" });
+      }
+
+      // Create new mood log
+      return prisma.moodLog.create({
+        data: {
+          mood,
+          note,
+          user: { connect: { id: userId } },
+        },
+      });
+    })
+    .then((newMoodLog) => {
+      if (newMoodLog) res.status(STATUS.SUCCESS).json(newMoodLog);
+    })
+    .catch(() =>
+      res.status(STATUS.SERVER_ERROR).json({ error: 'Failed to create mood log' })
+    );
+});
+
+// GET /api/mood-logs/today
+router.get('/today', async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const mood = await prisma.moodLog.findFirst({
+      where: {
+        userId: req.userId,
         createdAt: {
-          gte: startOfDay
+          gte: today
         }
+      },
+      orderBy: {
+        createdAt: 'desc'
       }
     });
 
-    if (existingMood) {
-      return res.status(400).json({ error: "You've already checked in today" });
-    }
-
-    // Create new mood log if no log exists for today
-    const newMoodLog = await prisma.moodLog.create({
-      data: {
-        mood,
-        note,
-        user: { connect: { id: userId } },
-      },
-    });
-
-    res.status(201).json(newMoodLog);
-  } catch (error) {
-    console.error('Error creating mood log:', error);
-    res.status(500).json({ error: 'Failed to create mood log' });
+    res.json(mood || null);
+  } catch {
+    res.status(500).json({ error: 'Failed to fetch mood log' });
   }
 });
 
 // GET /api/mood-logs
-router.get('/', async (req, res) => {
-  try {
-    const moodLogs = await prisma.moodLog.findMany({
-      where: { userId: req.userId },
-      orderBy: { createdAt: 'asc' }, // oldest to newest
-      select: {
-        mood: true,
-        createdAt: true
-      }
-    });
+router.get('/', (req, res) => {
+  const { from } = req.query;
+  const where = { userId: req.userId };
+  if (from) where.createdAt = { gte: new Date(from) };
 
-    res.json(moodLogs);
-  } catch (error) {
-    console.error('Error fetching mood logs:', error);
-    res.status(500).json({ error: 'Failed to fetch mood logs' });
-  }
+  prisma.moodLog
+    .findMany({ where, orderBy: { createdAt: 'asc' } })
+    .then((logs) => res.json(logs))
+    .catch(() =>
+      res.status(STATUS.SERVER_ERROR).json({ error: 'Failed to fetch mood logs' })
+    );
 });
 
 

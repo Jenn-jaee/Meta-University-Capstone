@@ -1,15 +1,30 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../api/axiosInstance';
+import toast from 'react-hot-toast';
 import WelcomeModal from '../components/WelcomeModal';
 import MoodModal from '../components/MoodModal';
 import PlantGrid from '../components/PlantGrid';
-import { growPlant } from '../api/plantAPI';
+import { checkAndGrowPlant } from '../services/plantService';
 import { calculateMoodStreak } from './MoodPage';
+import ProgressRing from '../components/ProgressRing';
+import { getWeeklyEngagement } from '../utils/engagement.js';
 import './DashboardHome.css';
 
+// ── Keep toast from firing twice for the same level ───────────────
+function showGrowthToastOnce(level) {
+  const last = localStorage.getItem('lastPlantStage');
+  if (last !== String(level)) {
+    toast.success(`🎉 Yay! Your plant reached stage ${level}!`, {
+      id: 'plantGrewOnce',
+    });
+    localStorage.setItem('lastPlantStage', String(level));
+  }
+}
 function DashBoardHome() {
   const navigate = useNavigate();
+  const [engagementPercentage, setEngagementPercentage] = useState(0);
+
 
   // State for user info and modals
   const [displayName, setDisplayName] = useState('');
@@ -23,8 +38,17 @@ function DashBoardHome() {
   const [habits, setHabits] = useState([]);
   const [logs, setLogs] = useState([]);
   const [entries, setEntries] = useState([]);
-  const [moodLogs, setMoodLogs] = useState([]);
   const [streak, setStreak] = useState(0);
+
+  // Fetch user engagement percentage on initial load
+  useEffect(() => {
+    getWeeklyEngagement().then(({ percentage }) => {
+      const calculated = Math.min((percentage || 0) * 100, 100);
+      setEngagementPercentage(calculated);
+    }).catch(() => {
+      setEngagementPercentage(0);
+    });
+  }, []);
 
   // Fetch user profile on initial load
   useEffect(() => {
@@ -42,22 +66,30 @@ function DashBoardHome() {
     }
   }, [displayName]);
 
+  // Fetch all mood logs once, then calculate & store the current streak
+  useEffect(() => {
+    const fetchMoodLogs = async () => {
+      try {
+        const res = await axios.get('/api/mood-logs');
+        const calculated = calculateMoodStreak(res.data);
+        setStreak(calculated);
+      } catch {
+        toast.error('Unable to load mood logs.');
+      }
+    };
 
-// Fetch all mood logs once, then calculate & store the current streak
+    fetchMoodLogs();
+  }, []);
+
+/* ───────────────────  ONE-TIME PLANT RECONCILE  ─────────────────── */
 useEffect(() => {
-  const fetchMoodLogs = async () => {
-    try {
-      const res = await axios.get('/api/mood-logs');
-      setMoodLogs(res.data);
-      const calculated = calculateMoodStreak(res.data);
-      setStreak(calculated);
-    } catch (err) {
-      console.error('Error fetching mood logs:', err);
-    }
-  };
+  const userId = localStorage.getItem('userId');
+  if (!userId) return;
 
-  fetchMoodLogs();
-  }, []);   // runs only once when Dashboard mounts
+  checkAndGrowPlant(userId).then((res) => {setPlantStage(res.level); showGrowthToastOnce(res.level);});
+}, []);
+
+/* ────────────────────────────────────────────────────────────────── */
 
 
   // Fetches user profile details
@@ -70,8 +102,8 @@ useEffect(() => {
       if (!user.displayName || !user.hasSeenWelcome) {
         setShowWelcomeModal(true);
       }
-    } catch (err) {
-      console.error('Error fetching user:', err);
+    } catch {
+      toast.error('Unable to load user.');
     }
   };
 
@@ -81,7 +113,7 @@ useEffect(() => {
     try {
       const res = await axios.get('/api/mood-logs/today');
       setTodayMood(res.data);
-    } catch (err) {
+    } catch {
       setTodayMood(null);
     }
   };
@@ -91,20 +123,18 @@ useEffect(() => {
     try {
       const res = await axios.get('/api/plant-growth/me');
       setPlantStage(res.data.level || 1); // update to use level
-
-    } catch (err) {
-      console.error('Error fetching plant stage:', err);
+    } catch {
+      toast.error('Unable to load plant stage.');
     }
   };
-
 
   // Fetches all user habits
   const fetchHabits = async () => {
     try {
       const res = await axios.get('/api/habits');
       setHabits(res.data);
-    } catch (err) {
-      console.error('Error fetching habits:', err);
+    } catch {
+      toast.error('Unable to load habits.');
     }
   };
 
@@ -113,8 +143,8 @@ useEffect(() => {
     try {
       const res = await axios.get('/api/habit-logs/today');
       setLogs(res.data);
-    } catch (err) {
-      console.error('Error fetching habit logs:', err);
+    } catch {
+      toast.error('Unable to load habit logs.');
     }
   };
 
@@ -123,8 +153,8 @@ useEffect(() => {
     try {
       const res = await axios.get('/api/journal');
       setEntries(res.data);
-    } catch (err) {
-      console.error('Error fetching entries:', err);
+    } catch {
+      toast.error('Unable to load journal entries.');
     }
   };
 
@@ -138,8 +168,8 @@ useEffect(() => {
       setDisplayName(res.data.displayName);
       setHasSeenWelcome(true);
       setShowWelcomeModal(false);
-    } catch (err) {
-      console.error('Failed to save display name:', err);
+    } catch {
+      toast.error('Failed to save display name.');
     }
   };
 
@@ -181,14 +211,13 @@ useEffect(() => {
             {streak > 0 ? `${streak} day${streak > 1 ? 's' : ''} of growth` : '0 days of growth'}
           </p>
 
-
           <div
             className={`dashboard-tile ${todayMood ? 'disabled-tile' : ''}`}
             onClick={() => {
               if (!todayMood) {
                 setShowMoodModal(true);
               } else {
-                alert("You’ve already checked in today 🌼 Come back tomorrow!");
+                toast("You’ve already checked in today 🌼 Come back tomorrow!");
               }
             }}
             title={todayMood ? "You've already checked in today" : "Click to log your mood for today"}
@@ -199,12 +228,21 @@ useEffect(() => {
           {showMoodModal && (
             <MoodModal
               onClose={() => setShowMoodModal(false)}
-              onSuccess={async (newMood) => {
-                setTodayMood(newMood);   //update mood immediately
-                await growPlant();   // grow the plant after mood check-in
-                await fetchPlantStage(); //fetch plant stage
-                setShowMoodModal(false);
-              }}
+              onSuccess={({ mood, note, newLevel }) => {
+              setTodayMood({ mood, note });
+
+              if (newLevel) {
+                setPlantStage(newLevel);
+                toast.success(`🎉 Yay! Your plant reached stage ${newLevel}!`, {
+                  id: 'plantGrewModal',
+                });
+              } else {
+                fetchPlantStage();
+              }
+
+              setShowMoodModal(false);
+            }}
+
             />
           )}
         </div>
@@ -213,8 +251,8 @@ useEffect(() => {
           <h3>Your Garden</h3>
 
           <PlantGrid stage={plantStage} />
-
-    
+          <h4>Weekly Engagement</h4>
+          <ProgressRing percentage={engagementPercentage} />
         </div>
       </section>
 

@@ -12,7 +12,7 @@ import SettingsPanel from './components/SettingsPanel.jsx';
 function App() {
   return (
     <Router>
-      <Toaster position="top-right" reverseOrder={false} />
+      <Toaster position="top-center" reverseOrder={false} />
       <Routes>
         <Route path="/" element={<WelcomePage />} />
         <Route path="/signin" element={<SignIn />} />

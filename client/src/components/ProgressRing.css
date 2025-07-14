@@ -1,0 +1,23 @@
+/* wrapper (optional flex centering if you like) */
+.progress-ring-wrapper {
+  display: block;
+}
+
+/* grey background circle */
+.progress-ring-bg {
+  stroke: #e6e6e6;
+}
+
+/* green foreground arc */
+.progress-ring-fg {
+  stroke: #6cc24a;                     /* leaf-green */
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.5s ease;
+}
+
+/* percentage label */
+.progress-ring-label {
+  font-family: inherit;
+  font-size: 1rem;
+  fill: #333;
+}

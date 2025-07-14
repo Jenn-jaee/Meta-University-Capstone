@@ -1,4 +1,3 @@
-// routes/moodLogs.js
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const checkAuth = require('../middleware/checkAuth');
@@ -8,7 +7,6 @@ const prisma = new PrismaClient();
 
 router.use(checkAuth);
 
-// POST /api/mood-logs
 // POST /api/mood-logs
 router.post('/', async (req, res) => {
   try {
@@ -53,8 +51,7 @@ router.post('/', async (req, res) => {
 });
 
 
-// moodLogs.js
-
+// GET /api/mood-logs/today
 router.get('/today', async (req, res) => {
   try {
     const today = new Date();
@@ -78,6 +75,26 @@ router.get('/today', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch mood log' });
   }
 });
+
+// GET /api/mood-logs
+router.get('/', async (req, res) => {
+  try {
+    const logs = await prisma.moodLog.findMany({
+      where: {
+        userId: req.userId
+      },
+      orderBy: {
+        createdAt: 'asc'
+      }
+    });
+
+    res.json(logs);
+  } catch (error) {
+    console.error('Error fetching mood logs:', error);
+    res.status(500).json({ error: 'Failed to fetch mood logs' });
+  }
+});
+
 
 
 module.exports = router;

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import './WelcomePage.css';
 import { useNavigate } from 'react-router-dom';
-// import SignUpModal from './SignUpModal';
 
 const WelcomePage = () => {
   const navigate = useNavigate();

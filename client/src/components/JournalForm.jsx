@@ -44,7 +44,7 @@ function JournalForm({ onSubmit, editingEntry, onCancel }) {
         }
     };
 
-  const moods = [
+  const journalmoods = [
     { value: 'happy', emoji: '😊', label: 'Happy' },
     { value: 'sad', emoji: '😢', label: 'Sad' },
     { value: 'angry', emoji: '😠', label: 'Angry' },
@@ -54,7 +54,7 @@ function JournalForm({ onSubmit, editingEntry, onCancel }) {
   ];
 
   return (
-    <div className="journal-form-container">
+    <div className="journal-form-container panel">
       <h2 className="journal-form-title">
         {editingEntry ? 'Edit Entry' : 'New Journal Entry'}
       </h2>
@@ -80,7 +80,7 @@ function JournalForm({ onSubmit, editingEntry, onCancel }) {
         <div className="mood-selector">
           <label className="mood-label">How are you feeling?</label>
           <div className="mood-options">
-            {moods.map((m) => (
+            {journalmoods.map((m) => (
               <label key={m.value} className="mood-option">
                 <input
                   type="radio"

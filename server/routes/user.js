@@ -1,58 +1,113 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const checkAuth = require('../middleware/checkAuth');
+const multer = require('multer');
+const path = require('path');
+const handleError = require('../utils/handleError');   // centralized error helper
 
 const prisma = new PrismaClient();
 const router = express.Router();
 
+/* ────────── Multer storage config ──────────
+ * We give every file a unique name: userId-timestamp.ext
+*/
+const storage = multer.diskStorage({
+  destination: (req, file, cb) =>
+    cb(null, path.join(__dirname, '..', 'uploads')),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, `${req.userId}-${Date.now()}${ext}`);
+  },
+});
+const upload = multer({ storage });
+
 // GET /api/user/me
 router.get('/me', checkAuth, async (req, res) => {
-try {
-const user = await prisma.user.findUnique({
-where: { id: req.userId },
-select: {
-id: true,
-email: true,
-name: true,
-displayName: true,
-hasSeenWelcome: true,
-},
-});
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        displayName: true,
+        avatarUrl: true,
+        phone: true,
+        darkMode: true,
+        dailyReminders: true,
+        privateJournal: true,
+        hasSeenWelcome: true,
+        googleId: true, // tells frontend if email should be read-only
+      },
+    });
 
-if (!user) return res.status(404).json({ error: 'User not found' });
-
-res.json(user);
-} catch (err) {
-console.error('Error fetching user:', err);
-res.status(500).json({ error: 'Failed to fetch user' });
-}
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json(user);
+  } catch (err) {
+    return handleError(res, err, 'Failed to fetch user');
+  }
 });
 
 // PATCH /api/user/profile
 router.patch('/profile', checkAuth, async (req, res) => {
-const { displayName, hasSeenWelcome } = req.body;
+  const { displayName, phone, email, hasSeenWelcome, darkMode } = req.body;
 
-try {
-const updatedUser = await prisma.user.update({
-where: { id: req.userId },
-data: {
-...(displayName && { displayName }),
-...(hasSeenWelcome !== undefined && { hasSeenWelcome }),
-},
-select: {
-id: true,
-email: true,
-name: true,
-displayName: true,
-hasSeenWelcome: true,
-},
+  try {
+    // Build data object conditionally
+    const data = {
+      ...(displayName && { displayName }),
+      ...(phone && { phone }),
+      ...(hasSeenWelcome !== undefined && { hasSeenWelcome }),
+      ...(darkMode !== undefined && { darkMode }),
+    };
+
+    // Only allow email change for non-OAuth accounts
+    const currentUser = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: { googleId: true },
+    });
+    if (!currentUser.googleId && email) data.email = email;
+
+    const updatedUser = await prisma.user.update({
+      where: { id: req.userId },
+      data,
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        displayName: true,
+        phone: true,
+        avatarUrl: true,
+        darkMode: true,
+        dailyReminders: true,
+        privateJournal: true,
+        hasSeenWelcome: true,
+        googleId: true,
+      },
+    });
+
+    res.json(updatedUser);
+  } catch (err) {
+    return handleError(res, err, 'Failed to update profile');
+  }
 });
 
-res.json(updatedUser);
-} catch (err) {
-console.error('Error updating profile:', err);
-res.status(500).json({ error: 'Failed to update profile info' });
-}
+// POST /api/user/avatar
+router.post('/avatar', checkAuth, upload.single('avatar'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+
+    const avatarUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+
+    await prisma.user.update({
+      where: { id: req.userId },
+      data: { avatarUrl },
+    });
+
+    res.json({ avatarUrl, status: 'success' });
+  } catch (err) {
+    return handleError(res, err, 'Avatar upload failed');
+  }
 });
 
 module.exports = router;

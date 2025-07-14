@@ -15,7 +15,6 @@ router.post('/register', async (req, res) => {
 
     try {
         const {email, password, name} = req.body;
-        console.debug('Register attempt:', { email, name }); //for debugging
 
         // VALIDATION: Ensure email and password are provided
         if (!email || !password) {
@@ -27,22 +26,18 @@ router.post('/register', async (req, res) => {
         //check if user already exists
         const existingUser = await prisma.user.findUnique({where: {email}});
         if (existingUser) {
-            console.debug('Registration failed: User already exists'); //for debugging
             return res.status(400).json({error: 'User already exists'});
         }
 
         //hash password
         const hashedPassword = await bcrypt.hash(password, 10);
-        console.debug('Password hashed successfully'); //for debugging
 
 
         //create user
         const user = await prisma.user.create({data: {email,password: hashedPassword,name}})
-        console.debug('User created:', { id: user.id, email: user.email }); //for debugging
 
         //create JWT token
         const token = jwt.sign({userId: user.id}, process.env.JWT_SECRET, {expiresIn: '7d'})
-        console.debug('Token generated successfully'); //for debugging
 
         res.json({token, user: {id: user.id, email: user.email, name: user.name}})
         } catch(error){
@@ -55,7 +50,6 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
     try {
         const {email, password} = req.body;
-        console.debug('Login attempt for email:', email); //for debugging
 
         // VALIDATION: Ensure email and password are provided
         if (!email || !password) {
@@ -64,10 +58,8 @@ router.post('/login', async (req, res) => {
 
         // check if user exists
         const user = await prisma.user.findUnique({where: {email}});
-        console.debug('User found:', user ? 'Yes' : 'No'); //for debugging
 
         if (!user) {
-            console.debug('Login failed: User not found'); //for debugging
             return res.status(400).json({error: 'Invalid credentials'});
         }
 
@@ -80,11 +72,9 @@ router.post('/login', async (req, res) => {
 
         // check if password is correct
         const validPassword = await bcrypt.compare(password, user.password);
-        console.debug('Password valid:', validPassword);   //for debugging
 
 
         if (!validPassword) {
-            console.debug('Login failed: Invalid password');  //for debugging
             return res.status(400).json({error: 'Invalid credentials'});
         }
 
@@ -98,7 +88,6 @@ router.post('/login', async (req, res) => {
 });
 
 router.get('/test', (req, res) => {
-    console.log('Test route hit');
     res.json({ message: 'Auth routes are working' });
 });
 

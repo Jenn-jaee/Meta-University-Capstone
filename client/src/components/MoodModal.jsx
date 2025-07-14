@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import axios from '../api/axiosInstance';
+import { checkAndGrowPlant } from '../services/plantService';
+
 import './MoodModal.css';
 
 function MoodModal({ onClose, onSuccess }) {
@@ -32,15 +34,17 @@ function MoodModal({ onClose, onSuccess }) {
       const moodIndex = moods.findIndex(m => m.label === selectedMood);
       const moodValue = moodIndex !== -1 ? moodIndex + 1 : 3; // Default to 3 if no match
 
-      // Send mood log to backend
+      // 1. Save mood log
       await axios.post('/api/mood-logs', {
         mood: moodValue,
         note,
       });
 
+      // 2. Re-calculate growth and let parent decide toast/UI
+      const growResult = await checkAndGrowPlant(); // { grown, level }
 
-      // Trigger plant growth after mood log
-      const growRes = await axios.post('/api/plant-growth/grow');
+      const newLevel = growResult.grown ? growResult.level : null;
+
 
       // Show success message
       setStatus('success');
@@ -48,8 +52,9 @@ function MoodModal({ onClose, onSuccess }) {
 
       // Call onSuccess with submitted mood so dashboard can update immediately
       setTimeout(() => {
-        onSuccess({ mood: moodValue, note });
+        onSuccess({ mood: moodValue, note, newLevel });
       }, 1000);
+
     } catch (err) {
       // Handle duplicate check-in error
       if (err.response?.status === 400 && err.response?.data?.error?.includes('already')) {

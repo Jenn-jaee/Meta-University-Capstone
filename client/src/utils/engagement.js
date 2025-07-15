@@ -4,7 +4,7 @@ import { toast } from 'react-hot-toast';
 export async function getWeeklyEngagement() {
   const today = new Date();
   const sevenDaysAgo = new Date(today);
-  sevenDaysAgo.setDate(today.getDate() - 6); // inclusive range
+  sevenDaysAgo.setDate(today.getDate() - 6); // Inclusive range
 
   // Helper to convert a date to YYYY-MM-DD string
   const toDayString = (dateStr) =>
@@ -33,7 +33,7 @@ export async function getWeeklyEngagement() {
 
       return { percentage, logsRemaining };
     })
-    .catch((error) => {
+    .catch(() => {
       toast.error('Could not load engagement data');
       return { percentage: 0, logsRemaining: 9 };
     });

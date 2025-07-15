@@ -9,9 +9,10 @@ import { checkAndGrowPlant } from '../services/plantService';
 import { calculateMoodStreak } from './MoodPage';
 import ProgressRing from '../components/ProgressRing';
 import { getWeeklyEngagement } from '../utils/engagement.js';
+import RecommendationBanner from '../components/RecommendationBanner.jsx';
 import './DashboardHome.css';
 
-// ── Keep toast from firing twice for the same level ───────────────
+// Keep toast from firing twice for the same level
 function showGrowthToastOnce(level) {
   const last = localStorage.getItem('lastPlantStage');
   if (last !== String(level)) {
@@ -39,6 +40,8 @@ function DashBoardHome() {
   const [logs, setLogs] = useState([]);
   const [entries, setEntries] = useState([]);
   const [streak, setStreak] = useState(0);
+  const [banner, setBanner] = useState(null);
+  const [showBanner, setShowBanner] = useState(true);
 
   // Fetch user engagement percentage on initial load
   useEffect(() => {
@@ -81,16 +84,36 @@ function DashBoardHome() {
     fetchMoodLogs();
   }, []);
 
-/* ───────────────────  ONE-TIME PLANT RECONCILE  ─────────────────── */
-useEffect(() => {
-  const userId = localStorage.getItem('userId');
-  if (!userId) return;
+  // One-time plant reconcile
+  useEffect(() => {
+    const userId = localStorage.getItem('userId');
+    if (!userId) return;
 
-  checkAndGrowPlant(userId).then((res) => {setPlantStage(res.level); showGrowthToastOnce(res.level);});
-}, []);
+    checkAndGrowPlant(userId).then((res) => {
+      setPlantStage(res.level);
+      showGrowthToastOnce(res.level);
+    });
+  }, []);
 
-/* ────────────────────────────────────────────────────────────────── */
+  // Banner fetch
+  useEffect(() => {
+    const loadBanner = () => {
+      axios
+        .get('/api/recommendation')
+        .then((res) => {
+          if (res.data?.banner?.banner) {
+            setBanner(res.data.banner.banner);
+          } else {
+            setBanner(null);
+          }
+        })
+        .catch(() => {
+          setBanner(null);
+        });
+    };
 
+    loadBanner();
+  }, []);
 
   // Fetches user profile details
   const fetchUser = async () => {
@@ -184,8 +207,17 @@ useEffect(() => {
     return moodMap[value] || '🙂';
   };
 
+
   return (
     <div className="dashboard-home-container">
+      {showBanner && banner && (
+        <RecommendationBanner
+          title={banner.title}
+          description={banner.description}
+          onClose={() => setShowBanner(false)}
+        />
+      )}
+
       <header className="dashboard-header">
         <h2>
           {displayName && hasSeenWelcome
@@ -227,7 +259,7 @@ useEffect(() => {
           {showMoodModal && (
             <MoodModal
               onClose={() => setShowMoodModal(false)}
-              onSuccess={({ mood, note, newLevel }) => {
+            onSuccess={({ mood, note, newLevel }) => {
               setTodayMood({ mood, note });
 
               if (newLevel) {
@@ -238,7 +270,7 @@ useEffect(() => {
               } else {
                 fetchPlantStage();
               }
-
+              loadBanner(); // Refresh banner after success
               setShowMoodModal(false);
             }}
 
@@ -252,6 +284,7 @@ useEffect(() => {
           <PlantGrid stage={plantStage} />
           <h4>Weekly Engagement</h4>
           <ProgressRing percentage={engagementPercentage} />
+          <p>Aim to get 65% and above engagement to grow plant weekly</p>
         </div>
       </section>
 

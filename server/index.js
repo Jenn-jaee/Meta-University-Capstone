@@ -37,7 +37,7 @@ const habitLogsRouter = require('./routes/habitLogs');
 const userRouter = require('./routes/user');
 const moodLogsRoute = require('./routes/moodLogs');
 const plantGrowthRoutes = require('./routes/plantGrowth');
-
+const recoRoute         = require('./routes/analyticsRecommendation');
 
 
 
@@ -50,8 +50,7 @@ app.use('/api/habit-logs', habitLogsRouter);
 app.use('/api/user', userRouter);
 app.use('/api/mood-logs', moodLogsRoute);
 app.use('/api/plant-growth', plantGrowthRoutes);
-
-
+app.use('/api',               recoRoute);
 
 
 

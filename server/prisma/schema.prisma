@@ -68,7 +68,7 @@ model JournalEntry {
 model MoodLog {
   id        String   @id @default(uuid())
   mood      Int
-  note      String?  // user’s optional guided response
+  note      String?  // user's optional guided response
   createdAt DateTime @default(now())
 
   userId String
@@ -121,8 +121,8 @@ model PlantGrowth {
   user      User     @relation(fields: [userId], references: [id])
 }
 
-/// Stores a mutual connection between two users.
-/// We create the row only after both users choose to connect.
+/// Stores a mutual connection between two users.
+/// We create the row only after both users choose to connect.
 model Connection {
   id          String   @id @default(uuid())
   userAId     String
@@ -135,13 +135,14 @@ model Connection {
   @@unique([userAId, userBId])  // prevents duplicates
 }
 
-/// Each user decides which activities are visible to their connections.
-/// We read these flags every time we emit a feed‑update.
+/// Each user decides which activities are visible to their connections.
+/// We read these flags every time we emit a feed‑update.
 model ShareSettings {
-  id           String   @id @default(uuid())
-  shareMood    Boolean  @default(true)
-  shareJournal Boolean  @default(true)
-  shareHabit   Boolean  @default(true)
+  id             String   @id @default(uuid())
+  sharingEnabled Boolean  @default(true)  // Master toggle for all sharing
+  shareMood      Boolean  @default(true)
+  shareJournal   Boolean  @default(true)
+  shareHabit     Boolean  @default(true)
 
   userId String  @unique
   user   User    @relation(fields: [userId], references: [id])

@@ -9,7 +9,7 @@ const { invalidateFeed } = require('../utils/invalidateFeed');
 const prisma = new PrismaClient();
 const PAGE_LIMIT = 10;
 
-/**
+/*
  * Main feed endpoint with pagination support
  * GET /api/feed?cursor=ISO8601
  * Returns feed items from user's connections, respecting privacy settings
@@ -56,6 +56,9 @@ router.get('/', checkAuth, (req, res) => {
       const canShow = (uid, type) => {
         const userSettings = settings.find((s) => s.userId === uid);
         if (!userSettings) return true; // Default to sharing everything if no settings found
+
+        // If master toggle is off, don't share anything
+        if (userSettings.sharingEnabled === false) return false;
 
         if (type === 'MOOD') return userSettings.shareMood;
         if (type === 'JOURNAL') return userSettings.shareJournal;

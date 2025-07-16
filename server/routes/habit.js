@@ -1,6 +1,7 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const checkAuth = require('../middleware/checkAuth');
+const { invalidateFeed } = require('../utils/invalidateFeed');
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -9,88 +10,140 @@ const prisma = new PrismaClient();
 router.use(checkAuth);
 
 // POST /api/habits - Create a new habit
-router.post('/', async (req, res) => {
-  try {
-    const { title, description } = req.body;
+router.post('/', (req, res) => {
+  const { title, description } = req.body;
+  const userId = req.userId;
 
-    const habit = await prisma.habit.create({
-      data: {
-        title,
-        description,
-        userId: req.userId,
-      },
+  prisma.habit.create({
+    data: {
+      title,
+      description,
+      userId,
+    },
+  })
+  .then(habit => {
+    // Get user's connections to invalidate their feed caches
+    return prisma.$queryRaw`
+      SELECT "userBId" AS id
+      FROM "Connection"
+      WHERE "userAId" = ${userId}
+      UNION
+      SELECT "userAId" AS id
+      FROM "Connection"
+      WHERE "userBId" = ${userId};
+    `
+    .then(connections => {
+      const connectionIds = connections.map((c) => c.id);
+
+      // Invalidate feed caches
+      invalidateFeed(userId, connectionIds);
+
+      return res.json(habit);
     });
-
-    res.json(habit);
-  } catch (error) {
-    console.error('Error creating habit:', error);
-    res.status(500).json({ message: 'Failed to create habit' });
-  }
+  })
+  .catch(() => {
+    return res.status(500).json({ message: 'Failed to create habit' });
+  });
 });
 
 // GET /api/habits - Get all habits for the user
-router.get('/', async (req, res) => {
-  try {
-    const habits = await prisma.habit.findMany({
-      where: { userId: req.userId },
-      orderBy: { createdAt: 'desc' },
-    });
-
-    res.json(habits);
-  } catch (error) {
-    console.error('Error fetching habits:', error);
-    res.status(500).json({ message: 'Failed to fetch habits' });
-  }
+router.get('/', (req, res) => {
+  prisma.habit.findMany({
+    where: { userId: req.userId },
+    orderBy: { createdAt: 'desc' },
+  })
+  .then(habits => {
+    return res.json(habits);
+  })
+  .catch(() => {
+    return res.status(500).json({ message: 'Failed to fetch habits' });
+  });
 });
 
 // PUT /api/habits/:id - Update a habit
-router.put('/:id', async (req, res) => {
-  try {
-    const { title, description } = req.body;
+router.put('/:id', (req, res) => {
+  const { title, description } = req.body;
+  const userId = req.userId;
 
-    const updated = await prisma.habit.update({
-      where: { id: req.params.id },
-      data: { title, description },
+  prisma.habit.update({
+    where: { id: req.params.id },
+    data: { title, description },
+  })
+  .then(updated => {
+    // Get user's connections to invalidate their feed caches
+    return prisma.$queryRaw`
+      SELECT "userBId" AS id
+      FROM "Connection"
+      WHERE "userAId" = ${userId}
+      UNION
+      SELECT "userAId" AS id
+      FROM "Connection"
+      WHERE "userBId" = ${userId};
+    `
+    .then(connections => {
+      const connectionIds = connections.map((c) => c.id);
+
+      // Invalidate feed caches
+      invalidateFeed(userId, connectionIds);
+
+      return res.json(updated);
     });
-
-    res.json(updated);
-  } catch (error) {
-    console.error('Error updating habit:', error);
-    res.status(500).json({ message: 'Failed to update habit' });
-  }
+  })
+  .catch(() => {
+    return res.status(500).json({ message: 'Failed to update habit' });
+  });
 });
 
 // PATCH /api/habits/:id/toggle - Toggle active status or increment streak
-router.patch('/:id/toggle', async (req, res) => {
-  try {
-    const habit = await prisma.habit.findUnique({ where: { id: req.params.id } });
-
+router.patch('/:id/toggle', (req, res) => {
+  prisma.habit.findUnique({ where: { id: req.params.id } })
+  .then(habit => {
     if (!habit) return res.status(404).json({ message: 'Habit not found' });
 
-    const updated = await prisma.habit.update({
+    return prisma.habit.update({
       where: { id: req.params.id },
       data: {
         isActive: !habit.isActive,
         streak: habit.isActive ? habit.streak : habit.streak + 1,
       },
+    })
+    .then(updated => {
+      return res.json(updated);
     });
-
-    res.json(updated);
-  } catch (error) {
-    console.error('Error toggling habit:', error);
-    res.status(500).json({ message: 'Failed to toggle habit' });
-  }
+  })
+  .catch(() => {
+    return res.status(500).json({ message: 'Failed to toggle habit' });
+  });
 });
 
 // DELETE /api/habits/:id - Delete a habit
-router.delete('/:id', async (req, res) => {
-  try {
-    await prisma.habit.delete({ where: { id: req.params.id } });
-    res.json({ message: 'Habit deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting habit:', error);
-    res.status(500).json({ message: 'Failed to delete habit' });
-  }
+router.delete('/:id', (req, res) => {
+  const userId = req.userId;
+
+  prisma.habit.delete({ where: { id: req.params.id } })
+  .then(() => {
+    // Get user's connections to invalidate their feed caches
+    return prisma.$queryRaw`
+      SELECT "userBId" AS id
+      FROM "Connection"
+      WHERE "userAId" = ${userId}
+      UNION
+      SELECT "userAId" AS id
+      FROM "Connection"
+      WHERE "userBId" = ${userId};
+    `
+    .then(connections => {
+      const connectionIds = connections.map((c) => c.id);
+
+      // Invalidate feed caches
+      invalidateFeed(userId, connectionIds);
+
+      return res.json({ message: 'Habit deleted successfully' });
+    });
+  })
+  .catch(() => {
+    return res.status(500).json({ message: 'Failed to delete habit' });
+  });
 });
 
 module.exports = router;

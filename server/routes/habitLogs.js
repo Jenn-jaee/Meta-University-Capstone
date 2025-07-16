@@ -1,6 +1,7 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const checkAuth = require('../middleware/checkAuth');
+const { invalidateFeed } = require('../utils/invalidateFeed');
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -9,33 +10,33 @@ const prisma = new PrismaClient();
 router.use(checkAuth);
 
 // POST /api/habit-logs - Create or update today's habit log
-router.post('/', async (req, res) => {
+router.post('/', (req, res) => {
   const userId = req.userId;
   const { habitId, completed } = req.body;
 
-  try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-    const existingLog = await prisma.habitLog.findFirst({
-      where: {
-        userId,
-        habitId,
-        date: {
-          gte: today,
-          lt: new Date(today.getTime() + 24 * 60 * 60 * 1000), // end of today
-        },
+  prisma.habitLog.findFirst({
+    where: {
+      userId,
+      habitId,
+      date: {
+        gte: today,
+        lt: new Date(today.getTime() + 24 * 60 * 60 * 1000), // end of today
       },
-    });
+    },
+  })
+  .then(existingLog => {
+    let resultPromise;
 
-    let result;
     if (existingLog) {
-      result = await prisma.habitLog.update({
+      resultPromise = prisma.habitLog.update({
         where: { id: existingLog.id },
         data: { completed },
       });
     } else {
-      result = await prisma.habitLog.create({
+      resultPromise = prisma.habitLog.create({
         data: {
           userId,
           habitId,
@@ -45,38 +46,56 @@ router.post('/', async (req, res) => {
       });
     }
 
-    res.status(200).json(result);
-  } catch (error) {
-    console.error('Error logging habit:', error);
-    res.status(500).json({ error: 'Failed to log habit' });
-  }
+    return resultPromise.then(result => {
+      // Get user's connections to invalidate their feed caches
+      return prisma.$queryRaw`
+        SELECT "userBId" AS id
+        FROM "Connection"
+        WHERE "userAId" = ${userId}
+        UNION
+        SELECT "userAId" AS id
+        FROM "Connection"
+        WHERE "userBId" = ${userId};
+      `
+      .then(connections => {
+        const connectionIds = connections.map((c) => c.id);
+
+        // Invalidate feed caches
+        invalidateFeed(userId, connectionIds);
+
+        return res.status(200).json(result);
+      });
+    });
+  })
+  .catch(() => {
+    return res.status(500).json({ error: 'Failed to log habit' });
+  });
 });
 
 // GET /api/habit-logs/today - Fetch all of today's habit logs for user
-router.get('/today', async (req, res) => {
-  try {
-    const userId = req.userId;
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0);
+router.get('/today', (req, res) => {
+  const userId = req.userId;
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
 
-    const endOfDay = new Date();
-    endOfDay.setHours(23, 59, 59, 999);
+  const endOfDay = new Date();
+  endOfDay.setHours(23, 59, 59, 999);
 
-    const logs = await prisma.habitLog.findMany({
-      where: {
-        userId,
-        date: {
-          gte: startOfDay,
-          lt: endOfDay,
-        },
+  prisma.habitLog.findMany({
+    where: {
+      userId,
+      date: {
+        gte: startOfDay,
+        lt: endOfDay,
       },
-    });
-
-    res.json(logs);
-  } catch (error) {
-    console.error("Error fetching today’s habit logs:", error);
-    res.status(500).json({ message: 'Failed to fetch habit logs' });
-  }
+    },
+  })
+  .then(logs => {
+    return res.json(logs);
+  })
+  .catch(() => {
+    return res.status(500).json({ message: 'Failed to fetch habit logs' });
+  });
 });
 
 module.exports = router;

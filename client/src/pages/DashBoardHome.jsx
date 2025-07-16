@@ -259,7 +259,7 @@ function DashBoardHome() {
           {showMoodModal && (
             <MoodModal
               onClose={() => setShowMoodModal(false)}
-            onSuccess={({ mood, note, newLevel }) => {
+              onSuccess={({ mood, note, newLevel }) => {
               setTodayMood({ mood, note });
 
               if (newLevel) {
@@ -280,7 +280,6 @@ function DashBoardHome() {
 
         <div className="card garden-card">
           <h3>Your Garden</h3>
-
           <PlantGrid stage={plantStage} />
           <h4>Weekly Engagement</h4>
           <ProgressRing percentage={engagementPercentage} />

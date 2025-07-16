@@ -15,7 +15,6 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
 app.use((req, res, next) => {
-    console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
     next();
 });
 
@@ -38,35 +37,30 @@ const habitLogsRouter = require('./routes/habitLogs');
 const userRouter = require('./routes/user');
 const moodLogsRoute = require('./routes/moodLogs');
 const plantGrowthRoutes = require('./routes/plantGrowth');
-
+const recoRoute         = require('./routes/analyticsRecommendation');
 
 
 
 
 
 app.use('/api/auth', authRoutes);
-app.use('/api', checkAuth, journalRoutes);
+app.use('/api/journal', journalRoutes);
 app.use('/api/habits', habitRoutes);
 app.use('/api/habit-logs', habitLogsRouter);
 app.use('/api/user', userRouter);
 app.use('/api/mood-logs', moodLogsRoute);
 app.use('/api/plant-growth', plantGrowthRoutes);
-
-
+app.use('/api',               recoRoute);
 
 
 
 
 //Test route
 app.get('/', (req, res) => {
-    console.log('Health check');
     res.json({ status: 'Server is running' });
-
   });
 app.get('/api/health', (req, res) => {
-  console.log('Health check');
   res.json({ status: 'Server is running' });
-
 });
 
 //start server

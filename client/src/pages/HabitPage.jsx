@@ -1,5 +1,5 @@
 // pages/HabitPage.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import HabitForm from '../components/HabitForm';
 import HabitList from '../components/HabitList';
 import '../components/Habit.css';

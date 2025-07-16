@@ -4,8 +4,14 @@ import axios from '../api/axiosInstance.js';
 import JournalForm from '../components/JournalForm.jsx';
 import JournalList from '../components/JournalList.jsx';
 import { STATUS } from '../api/axiosInstance.js';
-
+import { checkAndGrowPlant } from '../services/plantService';
+import isToday from 'date-fns/isToday';
+import toast from 'react-hot-toast';
 import '../components/Journal.css';
+
+/* ------- toast constants ----- */
+const SAVE_ENTRY_ERROR = 'Unable to save your entry. Please try again.';
+const DELETE_ENTRY_ERROR = 'Unable to delete entry. Please try again.';
 
 function JournalPage() {
   const [entries, setEntries] = useState([]);
@@ -19,10 +25,10 @@ function JournalPage() {
       navigate('/');
       return;
     }
-
     fetchEntries();
   }, [navigate]);
 
+  /* -------- Fetch all journal entries -------- */
   const fetchEntries = () => {
     axios
       .get('/api/journal')
@@ -33,14 +39,16 @@ function JournalPage() {
         }
       })
       .catch((error) => {
-        console.error('Error fetching entries:', error);
         if (error.response?.status === STATUS.NOT_AUTHORIZED) {
           localStorage.removeItem('token');
           navigate('/');
+        } else {
+          toast.error('Unable to load journal entries.');
         }
       });
   };
 
+  /* -------- Create or update a journal entry -------- */
   const handleSubmit = (entryData) => {
     const request = editingEntry
       ? axios.put(`/api/journal/${editingEntry.id}`, entryData)
@@ -51,36 +59,45 @@ function JournalPage() {
         if (response.status === STATUS.SUCCESS) {
           fetchEntries();
           setEditingEntry(null);
+
+          // Trigger growth only if this is the first journal today
+          const alreadyLoggedToday = entries.some((e) =>
+            isToday(new Date(e.createdAt))
+          );
+          if (!alreadyLoggedToday) {
+            checkAndGrowPlant();
+          }
         } else {
-            console.error('Request failed with status:', response.status); // Log the error status
-            alert('Something went wrong while saving your entry. Please try again.');
+          toast.error(SAVE_ENTRY_ERROR);
         }
       })
-      .catch((error) => {
-        console.error('Error saving entry:', error);
-        alert('Something went wrong while saving your entry. Please try again.');
-      });
+      .catch(() =>
+        toast.error(SAVE_ENTRY_ERROR)
+      );
   };
 
+  /* -------- Edit handler -------- */
   const handleEdit = (entry) => {
     setEditingEntry(entry);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  /* -------- Delete a journal entry -------- */
   const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this entry?')) {
-      axios
-        .delete(`/api/journal/${id}`)
-        .then((response) => {
-          if (response.status === STATUS.SUCCESS) {
-            fetchEntries();
-          }
-        })
-        .catch((error) => {
-          console.error('Error deleting entry:', error);
-          alert('Something went wrong while deleting. Please try again.');
-        });
-    }
+    if (!window.confirm('Are you sure you want to delete this entry?')) return;
+
+    axios
+      .delete(`/api/journal/${id}`)
+      .then((response) => {
+        if (response.status === STATUS.SUCCESS) {
+          fetchEntries();
+        } else {
+          toast.error(DELETE_ENTRY_ERROR);
+        }
+      })
+      .catch(() =>
+        toast.error(DELETE_ENTRY_ERROR)
+      );
   };
 
   if (loading) {

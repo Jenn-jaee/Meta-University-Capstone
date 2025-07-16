@@ -97,7 +97,6 @@ function MoodPage() {
         <p>🔥 Current Mood Streak: <strong>{streak} day{streak === 1 ? '' : 's'}</strong></p>
       </div>
     </div>
-
   );
 }
 

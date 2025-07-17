@@ -95,23 +95,24 @@ function DashBoardHome() {
     });
   }, []);
 
-  // Banner fetch
-  useEffect(() => {
-    const loadBanner = () => {
-      axios
-        .get('/api/recommendation')
-        .then((res) => {
-          if (res.data?.banner?.banner) {
-            setBanner(res.data.banner.banner);
-          } else {
-            setBanner(null);
-          }
-        })
-        .catch(() => {
+  // Function to load recommendation banner
+  const loadBanner = () => {
+    axios
+      .get('/api/recommendation')
+      .then((res) => {
+        if (res.data?.banner?.banner) {
+          setBanner(res.data.banner.banner);
+        } else {
           setBanner(null);
-        });
-    };
+        }
+      })
+      .catch(() => {
+        setBanner(null);
+      });
+  };
 
+  // Banner fetch on initial load
+  useEffect(() => {
     loadBanner();
   }, []);
 

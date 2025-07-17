@@ -9,8 +9,9 @@ function Header({ onLogout }) {
         <nav className="header-nav">
           <NavLink
             to="/dashboard"
-            className="nav-button">
-              🏠 Home
+            className="nav-button"
+          >
+            🏠 Home
           </NavLink>
 
           <NavLink
@@ -47,9 +48,29 @@ function Header({ onLogout }) {
           >
             ⚙️ Settings
           </NavLink>
+
+          <NavLink
+            to="connect"
+            className={({ isActive }) =>
+              isActive ? 'nav-button active' : 'nav-button'
+            }
+          >
+            👥 Connections
+          </NavLink>
+
           <button className="logout-button" onClick={onLogout}>
             Logout
           </button>
+
+          <NavLink
+            to="feed"
+            className={({ isActive }) =>
+              isActive ? 'nav-button active' : 'nav-button'
+            }
+          >
+            Feed
+          </NavLink>
+
         </nav>
       </div>
     </header>

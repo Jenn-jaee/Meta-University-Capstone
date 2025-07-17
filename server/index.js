@@ -5,22 +5,8 @@ const passport = require('./config/passport');
 const path = require('path');
 const http = require('http');
 const initSocket = require('./socket');
+const { STATUS } = require('./constants');
 require('dotenv').config();
-
-// Add global error handlers for uncaught exceptions and unhandled rejections
-process.on('uncaughtException', (err) => {
-  console.error('UNCAUGHT EXCEPTION! 💥 Shutting down...');
-  console.error(err.name, err.message);
-  console.error(err.stack);
-  process.exit(1);
-});
-
-process.on('unhandledRejection', (err) => {
-  console.error('UNHANDLED REJECTION! 💥 Shutting down...');
-  console.error(err.name, err.message);
-  console.error(err.stack);
-  process.exit(1);
-});
 
 const app = express();
 
@@ -74,13 +60,11 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'Server is running' });
 });
 
-// Global error handler middleware
+// Global error handler middleware - catches any unhandled errors in the application
 app.use((err, req, res, next) => {
-  console.error('Global error handler caught:', err);
-  res.status(500).json({
+  res.status(STATUS.SERVER_ERROR).json({
     status: 'error',
-    message: 'Something went wrong!',
-    error: process.env.NODE_ENV === 'development' ? err : {}
+    message: 'Something went wrong!'
   });
 });
 

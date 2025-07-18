@@ -40,6 +40,13 @@ model User {
   plantGrowths    PlantGrowth[]
   habitLogs      HabitLog[]
   moodLogs       MoodLog[]
+
+  // Social connections (mutual)
+  connectionsA Connection[] @relation("UserAConnections")
+  connectionsB Connection[] @relation("UserBConnections")
+
+  // Sharing settings (1:1)
+  shareSettings ShareSettings?
 }
 
 //JournalEntry model - stores daily journal entries
@@ -86,6 +93,7 @@ model Habit {
   user   User   @relation(fields: [userId], references: [id])
   logs        HabitLog[]
 
+
 }
 
 // HABIT LOG MODEL
@@ -111,4 +119,30 @@ model PlantGrowth {
 
   userId    String   @unique
   user      User     @relation(fields: [userId], references: [id])
+}
+
+/// Stores a mutual connection between two users.
+/// We create the row only after both users choose to connect.
+model Connection {
+  id          String   @id @default(uuid())
+  userAId     String
+  userBId     String
+  createdAt   DateTime @default(now())
+
+  userA User @relation("UserAConnections", fields: [userAId], references: [id])
+  userB User @relation("UserBConnections", fields: [userBId], references: [id])
+
+  @@unique([userAId, userBId])  // prevents duplicates
+}
+
+/// Each user decides which activities are visible to their connections.
+/// We read these flags every time we emit a feed‑update.
+model ShareSettings {
+  id           String   @id @default(uuid())
+  shareMood    Boolean  @default(true)
+  shareJournal Boolean  @default(true)
+  shareHabit   Boolean  @default(true)
+
+  userId String  @unique
+  user   User    @relation(fields: [userId], references: [id])
 }

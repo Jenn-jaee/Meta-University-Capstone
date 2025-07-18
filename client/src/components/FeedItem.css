@@ -1,0 +1,111 @@
+.feed-item {
+  background-color: #fafafa;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+}
+
+.feed-item:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.feed-item-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.feed-item-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 0.75rem;
+}
+
+.feed-item-user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.feed-item-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+  color: #333;
+}
+
+.feed-item-timestamp {
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.feed-item-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.feed-item-mood {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.feed-item-mood-emoji {
+  font-size: 2rem;
+  margin-right: 0.5rem;
+}
+
+.feed-item-mood-text {
+  font-size: 1rem;
+  color: #555;
+}
+
+.feed-item-journal p {
+  margin: 0;
+  line-height: 1.5;
+  color: #444;
+}
+
+.feed-item-toggle {
+  background: none;
+  border: none;
+  color: #4a90e2;
+  font-size: 0.9rem;
+  padding: 0.5rem 0;
+  cursor: pointer;
+  text-align: left;
+  margin-top: 0.5rem;
+}
+
+.feed-item-toggle:hover {
+  text-decoration: underline;
+}
+
+.feed-item-type-label {
+  font-size: 0.85rem;
+  color: #888;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.feed-item-habit {
+  display: flex;
+  align-items: center;
+  margin-top: 0.25rem;
+}
+
+.feed-item-habit-icon {
+  font-size: 1.25rem;
+  margin-right: 0.5rem;
+}
+
+.feed-item-habit-title {
+  font-size: 1.1rem;
+  color: #444;
+  font-weight: 500;
+}

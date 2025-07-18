@@ -63,6 +63,20 @@ router.post('/', (req, res) => {
         // Invalidate feed caches
         invalidateFeed(userId, connectionIds);
 
+        // Emit WebSocket event to notify connections about the new mood log
+        if (req.app.locals.io) {
+          // Emit to the user who created the mood log
+          req.app.locals.io.emit(`feed:update:${userId}`, { type: 'new-mood' });
+
+          // Emit to all connections
+          connectionIds.forEach(connectionId => {
+            req.app.locals.io.emit(`feed:update:${connectionId}`, {
+              type: 'new-mood',
+              userId: userId
+            });
+          });
+        }
+
         return res.status(STATUS.SUCCESS).json(newMoodLog);
       });
     });

@@ -4,7 +4,6 @@ const checkAuth = require('../middleware/checkAuth');
 const { PrismaClient } = require('@prisma/client');
 const { STATUS } = require('../constants');
 const cache = require('../utils/cache');
-const { invalidateFeed } = require('../utils/invalidateFeed');
 
 const prisma = new PrismaClient();
 const PAGE_LIMIT = 10;
@@ -19,6 +18,8 @@ router.get('/', checkAuth, (req, res) => {
   const cursor = req.query.cursor
     ? new Date(req.query.cursor)
     : new Date(); // Default to current time for first page
+
+  // Process feed request with pagination
 
   // Generate cache key based on whether this is first page or paginated request
   const cacheKey = req.query.cursor
@@ -66,17 +67,20 @@ router.get('/', checkAuth, (req, res) => {
         return false;
       };
 
+      // Use the cursor for pagination
+      const cursorTimestamp = cursor.toISOString();
+
       return prisma.$queryRaw`
         SELECT * FROM (
           SELECT id, "userId", 'MOOD' AS type, note AS content, mood AS extra, "createdAt"
           FROM "MoodLog"
-          WHERE "userId" = ANY(${connectionIds}) AND "createdAt" < ${cursor}
+          WHERE "userId" = ANY(${connectionIds})
 
           UNION ALL
 
           SELECT id, "userId", 'JOURNAL' AS type, content, NULL AS extra, "createdAt"
           FROM "JournalEntry"
-          WHERE "userId" = ANY(${connectionIds}) AND "createdAt" < ${cursor}
+          WHERE "userId" = ANY(${connectionIds})
 
           UNION ALL
 
@@ -84,9 +88,9 @@ router.get('/', checkAuth, (req, res) => {
           FROM "HabitLog" HL
           JOIN "Habit" H ON H.id = HL."habitId"
           WHERE H."userId" = ANY(${connectionIds})
-            AND HL."date" < ${cursor}
             AND HL."completed" = true
         ) AS unioned
+        WHERE "createdAt" < ${cursorTimestamp}::timestamp
         ORDER BY "createdAt" DESC
         LIMIT ${PAGE_LIMIT + 1};
       `
@@ -96,7 +100,9 @@ router.get('/', checkAuth, (req, res) => {
 
         // Apply pagination and determine next cursor
         const items = filtered.slice(0, PAGE_LIMIT);
-        const nextCursor = filtered.length > PAGE_LIMIT ? filtered[PAGE_LIMIT].createdAt : null;
+        const nextCursor = filtered.length > PAGE_LIMIT
+          ? filtered[PAGE_LIMIT].createdAt
+          : null;
 
         const payload = { items, nextCursor };
 

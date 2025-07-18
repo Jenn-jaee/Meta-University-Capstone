@@ -60,7 +60,7 @@ model JournalEntry {
   content   String
   journalMood  Int?     // 0-5 scale for emoji, not tied to MoodLog
   createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   //Relationships
   userId String

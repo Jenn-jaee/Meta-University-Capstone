@@ -1,0 +1,87 @@
+/* Additional styles for the mood logs modal */
+
+.mood-logs-modal {
+  max-width: 500px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.mood-logs-container {
+  max-height: 400px;
+  overflow-y: auto;
+  margin: 15px 0;
+  padding-right: 10px;
+  /* Custom scrollbar for better UX */
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) transparent;
+}
+
+.mood-logs-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.mood-logs-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mood-logs-container::-webkit-scrollbar-thumb {
+  background-color: var(--accent);
+  border-radius: 10px;
+}
+
+.mood-log-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 12px;
+  margin-bottom: 10px;
+  background: var(--input-bg);
+  border-radius: 10px;
+  border-left: 4px solid var(--accent);
+  transition: transform 0.2s ease;
+}
+
+.mood-log-item:hover {
+  transform: translateX(2px);
+}
+
+.mood-log-emoji {
+  font-size: 24px;
+  margin-right: 15px;
+  min-width: 30px;
+  text-align: center;
+}
+
+.mood-log-details {
+  flex: 1;
+}
+
+.mood-log-date {
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: var(--fg);
+}
+
+.mood-log-note {
+  font-size: 14px;
+  color: var(--fg-muted, #666);
+  line-height: 1.4;
+}
+
+.loading, .error, .empty-state {
+  padding: 20px;
+  text-align: center;
+  color: var(--fg-muted, #666);
+}
+
+.error {
+  color: var(--error, #e74c3c);
+}
+
+.empty-state {
+  padding: 30px 0;
+}
+
+.empty-state p {
+  margin: 8px 0;
+}

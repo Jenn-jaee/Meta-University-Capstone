@@ -10,7 +10,18 @@ function JournalForm({ onSubmit, editingEntry, onCancel }) {
     if (editingEntry) {
       setTitle(editingEntry.title);
       setContent(editingEntry.content);
-      setMood(editingEntry.mood?.value !== undefined ? editingEntry.mood.value.toString() : 'neutral'); // Convert to string to match the options
+
+      // Map the numeric journalMood back to the string value
+      const moodMap = {
+        0: 'angry',
+        1: 'sad',
+        2: 'anxious',
+        3: 'neutral',
+        4: 'excited',
+        5: 'happy'
+      };
+
+      setMood(editingEntry.journalMood !== undefined ? moodMap[editingEntry.journalMood] : 'neutral');
 
     } else {
       setTitle('');
@@ -33,10 +44,10 @@ function JournalForm({ onSubmit, editingEntry, onCancel }) {
 
     // Check if the user has selected a mood
     console.debug("Selected mood:", mood); //for debugging
-    console.debug("Mapped moodValue:", moodMap[mood]); //for debugging
+    console.debug("Mapped journalMood:", moodMap[mood]); //for debugging
 
 
-    onSubmit({ title, content, moodValue: moodMap[mood] || 3 });
+    onSubmit({ title, content, journalMood: moodMap[mood] || 3 });
     if (!editingEntry) {
         setTitle('');
         setContent('');

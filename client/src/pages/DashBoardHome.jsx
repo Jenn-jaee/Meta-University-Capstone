@@ -4,6 +4,7 @@ import axios from '../api/axiosInstance';
 import toast from 'react-hot-toast';
 import WelcomeModal from '../components/WelcomeModal';
 import MoodModal from '../components/MoodModal';
+import MoodLogsModal from '../components/MoodLogsModal';
 import PlantGrid from '../components/PlantGrid';
 import { checkAndGrowPlant } from '../services/plantService';
 import { calculateMoodStreak } from './MoodPage';
@@ -32,6 +33,7 @@ function DashBoardHome() {
   const [hasSeenWelcome, setHasSeenWelcome] = useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [showMoodModal, setShowMoodModal] = useState(false);
+  const [showMoodLogsModal, setShowMoodLogsModal] = useState(false);
 
   // State for dashboard data
   const [todayMood, setTodayMood] = useState(null);
@@ -230,8 +232,11 @@ function DashBoardHome() {
       <section className="dashboard-section grid-two">
         <div className="card mood-card">
           <div className="card-header">
-            <h3>This Week’s Mood</h3>
-            <a href="#">View All</a>
+            <h3>This Week's Mood</h3>
+            <a href="#" onClick={(e) => {
+              e.preventDefault();
+              setShowMoodLogsModal(true);
+            }}>View All</a>
           </div>
           <p className="mood-text">
             {todayMood
@@ -338,6 +343,7 @@ function DashBoardHome() {
       </section>
 
       {showWelcomeModal && <WelcomeModal onSave={handleSaveDisplayName} />}
+      {showMoodLogsModal && <MoodLogsModal onClose={() => setShowMoodLogsModal(false)} />}
     </div>
   );
 }

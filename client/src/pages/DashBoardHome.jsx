@@ -7,7 +7,6 @@ import MoodModal from '../components/MoodModal';
 import MoodLogsModal from '../components/MoodLogsModal';
 import PlantGrid from '../components/PlantGrid';
 import { checkAndGrowPlant } from '../services/plantService';
-import { calculateMoodStreak } from './MoodPage';
 import ProgressRing from '../components/ProgressRing';
 import { getWeeklyEngagement } from '../utils/engagement.js';
 import RecommendationBanner from '../components/RecommendationBanner.jsx';
@@ -23,10 +22,10 @@ function showGrowthToastOnce(level) {
     localStorage.setItem('lastPlantStage', String(level));
   }
 }
+
 function DashBoardHome() {
   const navigate = useNavigate();
   const [engagementPercentage, setEngagementPercentage] = useState(0);
-
 
   // State for user info and modals
   const [displayName, setDisplayName] = useState('');
@@ -41,6 +40,7 @@ function DashBoardHome() {
   const [habits, setHabits] = useState([]);
   const [logs, setLogs] = useState([]);
   const [entries, setEntries] = useState([]);
+  const [weeklyLogs, setWeeklyLogs] = useState(0);
   const [streak, setStreak] = useState(0);
   const [banner, setBanner] = useState(null);
   const [showBanner, setShowBanner] = useState(true);
@@ -71,20 +71,99 @@ function DashBoardHome() {
     }
   }, [displayName]);
 
-  // Fetch all mood logs once, then calculate & store the current streak
+  // Helper function to calculate streak from mood logs
+  const calculateStreak = (logs) => {
+    if (!logs || logs.length === 0) return 0;
+
+    // Convert dates to YYYY-MM-DD strings
+    const toDayString = (date) => {
+      return new Date(date).toISOString().split('T')[0];
+    };
+
+    // Get all unique dates with logs
+    const dateSet = new Set();
+    logs.forEach(log => {
+      dateSet.add(toDayString(log.createdAt));
+    });
+
+    // Convert to array and sort (newest first)
+    const uniqueDates = Array.from(dateSet).sort().reverse();
+
+    // Check if there's a log for today
+    const today = toDayString(new Date());
+
+    // Find the most recent log date
+    let mostRecentLogDate = uniqueDates[0];
+
+    // If the most recent log is not from today or yesterday, streak is broken
+    if (mostRecentLogDate !== today) {
+      const yesterday = toDayString(new Date(Date.now() - 86400000));
+      if (mostRecentLogDate !== yesterday) {
+        return 0;
+      }
+    }
+
+    // Start counting streak from most recent log
+    let currentStreak = 1;
+    let currentDate = mostRecentLogDate;
+
+    // Check for consecutive days working backward
+    while (true) {
+      // Get the previous day
+      const prevDate = toDayString(new Date(new Date(currentDate).getTime() - 86400000));
+
+      // If there's a log for the previous day, increment streak
+      if (dateSet.has(prevDate)) {
+        currentStreak++;
+        currentDate = prevDate;
+      } else {
+        // Gap found, streak ends
+        break;
+      }
+    }
+
+    return currentStreak;
+  };
+
+  // Fetch mood logs and calculate weekly logs count and streak
+  // This will run on initial load and whenever todayMood changes
   useEffect(() => {
-    const fetchMoodLogs = async () => {
+    const fetchLogsAndCalculateStreak = async () => {
       try {
-        const res = await axios.get('/api/mood-logs');
-        const calculated = calculateMoodStreak(res.data);
-        setStreak(calculated);
-      } catch {
-        toast.error('Unable to load mood logs.');
+        // Get all mood logs (we only need mood logs for streak calculation)
+        const moodRes = await axios.get('/api/mood-logs');
+        const moodLogs = moodRes.data;
+
+        // Calculate the start of the current week (Sunday)
+        const today = new Date();
+        const dayOfWeek = today.getDay(); // 0 is Sunday, 1 is Monday, etc.
+        const startOfWeek = new Date(today);
+        startOfWeek.setDate(today.getDate() - dayOfWeek);
+        startOfWeek.setHours(0, 0, 0, 0);
+
+        // Count unique days with mood logs this week
+        const weeklyLogsSet = new Set(
+          moodLogs
+            .filter(log => new Date(log.createdAt) >= startOfWeek)
+            .map(log => new Date(log.createdAt).toDateString())
+        );
+
+        setWeeklyLogs(weeklyLogsSet.size);
+
+        // Calculate streak using only mood logs
+        const currentStreak = calculateStreak(moodLogs);
+        setStreak(currentStreak);
+
+      } catch (error) {
+        console.error('Error fetching logs:', error);
+        toast.error('Unable to load logs.');
+        setWeeklyLogs(0);
+        setStreak(0);
       }
     };
 
-    fetchMoodLogs();
-  }, []);
+    fetchLogsAndCalculateStreak();
+  }, [todayMood]); // Re-run when todayMood changes
 
   // One-time plant reconcile
   useEffect(() => {
@@ -210,7 +289,6 @@ function DashBoardHome() {
     return moodMap[value] || '🙂';
   };
 
-
   return (
     <div className="dashboard-home-container">
       {showBanner && banner && (
@@ -245,8 +323,14 @@ function DashBoardHome() {
           </p>
 
           <p className="growth-days">
-            {streak > 0 ? `${streak} day${streak > 1 ? 's' : ''} of growth` : '0 days of growth'}
+            {`${weeklyLogs}/7 mood logs this week`}
           </p>
+
+          {streak > 0 && (
+            <p className="streak-count">
+              🔥 {streak} day{streak !== 1 ? 's' : ''} streak
+            </p>
+          )}
 
           <div
             className={`dashboard-tile ${todayMood ? 'disabled-tile' : ''}`}

@@ -45,15 +45,19 @@ function DashBoardHome() {
   const [banner, setBanner] = useState(null);
   const [showBanner, setShowBanner] = useState(true);
 
-  // Fetch user engagement percentage on initial load
-  useEffect(() => {
-    getWeeklyEngagement().then(({ percentage }) => {
-      const calculated = Math.min((percentage || 0) * 100, 100);
+  // Fetch user engagement percentage on initial load and when mood or journal entries change
+  const fetchEngagementPercentage = () => {
+    getWeeklyEngagement().then((data) => {
+      const calculated = Math.min((data.percentage || 0) * 100, 100);
       setEngagementPercentage(calculated);
     }).catch(() => {
       setEngagementPercentage(0);
     });
-  }, []);
+  };
+
+  useEffect(() => {
+    fetchEngagementPercentage();
+  }, [todayMood, entries]); // Re-fetch when mood or journal entries change
 
   // Fetch user profile on initial load
   useEffect(() => {

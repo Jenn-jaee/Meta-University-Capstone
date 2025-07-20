@@ -99,17 +99,50 @@
 
 .habits-list {
   display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .habit {
-  background-color: #FFF6E3;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 0.5rem;
+  padding: 10px 15px;
+  background-color: #f5f5f5;
+  border-radius: 5px;
+  transition: background-color 0.2s ease;
+}
+
+.habit:hover {
+  background-color: #e9f5ff;
+}
+
+.habit-title {
+  flex-grow: 1;
+  font-weight: 500;
+}
+
+.habit-streak {
+  margin-right: 10px;
+  color: #ff6b00;
+  font-weight: bold;
+}
+
+.more-habits {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 0.9em;
+  color: #666;
+}
+
+.more-habits .link {
+  color: #2196f3;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.more-habits .link:hover {
+  text-decoration: underline;
 }
 
 .habit input {

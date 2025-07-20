@@ -384,21 +384,34 @@ function DashBoardHome() {
 
       <section className="dashboard-section habits-section">
         <div className="section-header">
-          <h3>Today’s Habits</h3>
+          <h3>Today's Habits</h3>
           <a onClick={() => navigate('/dashboard/habit')} className="link" style={{ cursor: 'pointer' }}>
             Manage Habits
           </a>
         </div>
         <div className="habits-list">
-          {habits.map((habit) => {
-            const log = logs.find((l) => l.habitId === habit.id);
-            const isCompleted = log?.completed || false;
-            return (
-              <div key={habit.id} className="habit">
-                {habit.title} <input type="checkbox" checked={isCompleted} readOnly />
-              </div>
-            );
-          })}
+          {habits.length === 0 ? (
+            <p>No habits created yet. Add some habits to track your progress!</p>
+          ) : (
+            habits.slice(0, 5).map((habit) => {
+              const log = logs.find((l) => l.habitId === habit.id);
+              const isCompleted = log?.completed || false;
+              return (
+                <div key={habit.id} className="habit">
+                  <span className="habit-title">{habit.title}</span>
+                  <span className="habit-streak">{habit.streak > 0 ? `🔥 ${habit.streak}` : ''}</span>
+                  <input type="checkbox" checked={isCompleted} readOnly />
+                </div>
+              );
+            })
+          )}
+          {habits.length > 5 && (
+            <div className="more-habits">
+              <a onClick={() => navigate('/dashboard/habit')} className="link">
+                +{habits.length - 5} more habits
+              </a>
+            </div>
+          )}
         </div>
       </section>
 

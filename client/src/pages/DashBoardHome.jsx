@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../api/axiosInstance';
 import toast from 'react-hot-toast';
+import { FaBook, FaChartLine, FaList } from 'react-icons/fa';
 import WelcomeModal from '../components/WelcomeModal';
 import MoodModal from '../components/MoodModal';
 import MoodLogsModal from '../components/MoodLogsModal';
@@ -416,9 +417,15 @@ function DashBoardHome() {
       </section>
 
       <section className="dashboard-section quick-actions">
-        <div className="action-tile">📝 Add Journal Entry</div>
-        <div className="action-tile">📊 View Mood Trends</div>
-        <div className="action-tile">✅ View Habits</div>
+        <div className="action-tile" onClick={() => navigate('/dashboard/journal')}>
+          <FaBook className="action-icon" /> Add Journal Entry
+        </div>
+        <div className="action-tile" onClick={() => navigate('/dashboard/mood')}>
+          <FaChartLine className="action-icon" /> View Mood Trend
+        </div>
+        <div className="action-tile" onClick={() => navigate('/dashboard/habit')}>
+          <FaList className="action-icon" /> View Habits
+        </div>
       </section>
 
       <section className="dashboard-section recent-entries">

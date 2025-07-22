@@ -14,12 +14,6 @@ export function checkAndGrowPlant(userId) {
       const { data: { level: currentStage = 1 } = {} } =
         await axiosInstance.get('/api/plant-growth/me');
 
-      console.table({
-        'Engagement %': (percentage * 100).toFixed(1) + '%',
-        'Current Stage': currentStage,
-        'Logs Remaining': logsRemaining,
-      });
-
       // 2. Should we grow? 65 %+ engagement AND not already at max
       const shouldGrow = percentage >= 0.65 && currentStage < 6;
 
@@ -27,16 +21,10 @@ export function checkAndGrowPlant(userId) {
         // POST automatically bumps stage by +1 in the backend
         const { data: { level } } = await axiosInstance.post('/api/plant-growth/grow');
 
-        console.info('Plant grew →', { grown: true, level, logsRemaining });
         return { grown: true, level, logsRemaining };
       }
 
       // 3. No growth needed
-      console.info('Plant check → no growth', {
-        grown: false,
-        level: currentStage,
-        logsRemaining,
-      });
       return { grown: false, level: currentStage, logsRemaining };
     })
     .catch(() => {

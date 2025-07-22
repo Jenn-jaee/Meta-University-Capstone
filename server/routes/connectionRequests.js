@@ -3,7 +3,7 @@ const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
 const checkAuth = require('../middleware/checkAuth');
 const { STATUS } = require('../constants');
-const { formatUserPreview } = require('../utils/connectionHelpers');
+const { formatUserPreview, validateRequestAccess } = require('../utils/connectionHelpers');
 const rateLimit = require('express-rate-limit');
 
 const prisma = new PrismaClient();
@@ -132,51 +132,52 @@ router.get('/me', (req, res) => {
 });
 
 // 3. Accept a request
-router.post('/accept/:requestId', (req, res) => {
+router.post('/accept/:requestId', async (req, res) => {
   const userId = req.userId;
   const requestId = req.params.requestId;
 
-  prisma.connectionRequest.findUnique({
-    where: { id: requestId },
-    include: { sender: true }
-  })
-  .then((request) => {
-    if (!request || request.receiverId !== userId) {
+  try {
+    // Find the request
+    const request = await prisma.connectionRequest.findUnique({
+      where: { id: requestId },
+      include: { sender: true }
+    });
+
+    if (!validateRequestAccess(request, userId, 'receiver')) {
       return res.status(STATUS.NOT_FOUND).json({ error: "Request not found." });
     }
 
     // Check if users are already connected
-    return prisma.connection.findFirst({
+    const existingConnection = await prisma.connection.findFirst({
       where: {
         OR: [
           { userAId: request.senderId, userBId: userId },
           { userAId: userId, userBId: request.senderId },
         ],
       },
-    })
-    .then((existingConnection) => {
-      if (existingConnection) {
-        // If already connected, just delete the request
-        return prisma.connectionRequest.delete({ where: { id: requestId } })
-          .then(() => res.json({ message: "Already connected with this user." }));
-      }
-
-      const connectionData = {
-        userAId: request.senderId,
-        userBId: request.receiverId,
-      };
-
-      // Use transaction for atomicity
-      return prisma.$transaction([
-        prisma.connection.create({ data: connectionData }),
-        prisma.connectionRequest.delete({ where: { id: requestId } })
-      ])
-      .then(() => res.json({ message: "Connection accepted." }));
     });
-  })
-  .catch(() => {
+
+    if (existingConnection) {
+      // If already connected, just delete the request
+      await prisma.connectionRequest.delete({ where: { id: requestId } });
+      return res.json({ message: "Already connected with this user." });
+    }
+
+    const connectionData = {
+      userAId: request.senderId,
+      userBId: request.receiverId,
+    };
+
+    // Use transaction for atomicity with async/await for better error handling
+    await prisma.$transaction([
+      prisma.connection.create({ data: connectionData }),
+      prisma.connectionRequest.delete({ where: { id: requestId } })
+    ]);
+
+    res.json({ message: "Connection accepted." });
+  } catch (error) {
     res.status(STATUS.SERVER_ERROR).json({ error: "Failed to accept request." });
-  });
+  }
 });
 
 // 4. Decline a request
@@ -188,7 +189,7 @@ router.delete('/decline/:requestId', (req, res) => {
     where: { id: requestId },
   })
   .then((request) => {
-    if (!request || request.receiverId !== userId) {
+    if (!validateRequestAccess(request, userId, 'receiver')) {
       return res.status(STATUS.NOT_FOUND).json({ error: "Request not found." });
     }
 
@@ -209,7 +210,7 @@ router.delete('/cancel/:requestId', (req, res) => {
     where: { id: requestId },
   })
   .then((request) => {
-    if (!request || request.senderId !== userId) {
+    if (!validateRequestAccess(request, userId, 'sender')) {
       return res.status(STATUS.NOT_FOUND).json({ error: "Request not found." });
     }
 

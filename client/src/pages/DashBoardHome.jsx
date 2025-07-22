@@ -2,13 +2,15 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../api/axiosInstance';
 import toast from 'react-hot-toast';
+import { FaBook, FaChartLine, FaList } from 'react-icons/fa';
 import WelcomeModal from '../components/WelcomeModal';
 import MoodModal from '../components/MoodModal';
+import MoodLogsModal from '../components/MoodLogsModal';
 import PlantGrid from '../components/PlantGrid';
 import { checkAndGrowPlant } from '../services/plantService';
-import { calculateMoodStreak } from './MoodPage';
 import ProgressRing from '../components/ProgressRing';
 import { getWeeklyEngagement } from '../utils/engagement.js';
+import { calculateMoodStreak } from '../utils/moodUtils';
 import RecommendationBanner from '../components/RecommendationBanner.jsx';
 import './DashboardHome.css';
 
@@ -22,16 +24,17 @@ function showGrowthToastOnce(level) {
     localStorage.setItem('lastPlantStage', String(level));
   }
 }
+
 function DashBoardHome() {
   const navigate = useNavigate();
   const [engagementPercentage, setEngagementPercentage] = useState(0);
-
 
   // State for user info and modals
   const [displayName, setDisplayName] = useState('');
   const [hasSeenWelcome, setHasSeenWelcome] = useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [showMoodModal, setShowMoodModal] = useState(false);
+  const [showMoodLogsModal, setShowMoodLogsModal] = useState(false);
 
   // State for dashboard data
   const [todayMood, setTodayMood] = useState(null);
@@ -39,19 +42,24 @@ function DashBoardHome() {
   const [habits, setHabits] = useState([]);
   const [logs, setLogs] = useState([]);
   const [entries, setEntries] = useState([]);
+  const [weeklyLogs, setWeeklyLogs] = useState(0);
   const [streak, setStreak] = useState(0);
   const [banner, setBanner] = useState(null);
   const [showBanner, setShowBanner] = useState(true);
 
-  // Fetch user engagement percentage on initial load
-  useEffect(() => {
-    getWeeklyEngagement().then(({ percentage }) => {
-      const calculated = Math.min((percentage || 0) * 100, 100);
+  // Fetch user engagement percentage on initial load and when mood or journal entries change
+  const fetchEngagementPercentage = () => {
+    getWeeklyEngagement().then((data) => {
+      const calculated = Math.min((data.percentage || 0) * 100, 100);
       setEngagementPercentage(calculated);
     }).catch(() => {
       setEngagementPercentage(0);
     });
-  }, []);
+  };
+
+  useEffect(() => {
+    fetchEngagementPercentage();
+  }, [todayMood, entries]); // Re-fetch when mood or journal entries change
 
   // Fetch user profile on initial load
   useEffect(() => {
@@ -69,20 +77,45 @@ function DashBoardHome() {
     }
   }, [displayName]);
 
-  // Fetch all mood logs once, then calculate & store the current streak
+
+  // Fetch mood logs and calculate weekly logs count and streak
+  // This will run on initial load and whenever todayMood changes
   useEffect(() => {
-    const fetchMoodLogs = async () => {
+    const fetchLogsAndCalculateStreak = async () => {
       try {
-        const res = await axios.get('/api/mood-logs');
-        const calculated = calculateMoodStreak(res.data);
-        setStreak(calculated);
-      } catch {
-        toast.error('Unable to load mood logs.');
+        // Get all mood logs (we only need mood logs for streak calculation)
+        const moodRes = await axios.get('/api/mood-logs');
+        const moodLogs = moodRes.data;
+
+        // Calculate the start of the current week (Sunday)
+        const today = new Date();
+        const dayOfWeek = today.getDay(); // 0 is Sunday, 1 is Monday, etc.
+        const startOfWeek = new Date(today);
+        startOfWeek.setDate(today.getDate() - dayOfWeek);
+        startOfWeek.setHours(0, 0, 0, 0);
+
+        // Count unique days with mood logs this week
+        const weeklyLogsSet = new Set(
+          moodLogs
+            .filter(log => new Date(log.createdAt) >= startOfWeek)
+            .map(log => new Date(log.createdAt).toDateString())
+        );
+
+        setWeeklyLogs(weeklyLogsSet.size);
+
+        // Calculate streak using only mood logs
+        const currentStreak = calculateMoodStreak(moodLogs);
+        setStreak(currentStreak);
+
+      } catch (error) {
+        toast.error('Unable to load logs.');
+        setWeeklyLogs(0);
+        setStreak(0);
       }
     };
 
-    fetchMoodLogs();
-  }, []);
+    fetchLogsAndCalculateStreak();
+  }, [todayMood]); // Re-run when todayMood changes
 
   // One-time plant reconcile
   useEffect(() => {
@@ -95,23 +128,24 @@ function DashBoardHome() {
     });
   }, []);
 
-  // Banner fetch
-  useEffect(() => {
-    const loadBanner = () => {
-      axios
-        .get('/api/recommendation')
-        .then((res) => {
-          if (res.data?.banner?.banner) {
-            setBanner(res.data.banner.banner);
-          } else {
-            setBanner(null);
-          }
-        })
-        .catch(() => {
+  // Function to load recommendation banner
+  const loadBanner = () => {
+    axios
+      .get('/api/recommendation')
+      .then((res) => {
+        if (res.data?.banner?.banner) {
+          setBanner(res.data.banner.banner);
+        } else {
           setBanner(null);
-        });
-    };
+        }
+      })
+      .catch(() => {
+        setBanner(null);
+      });
+  };
 
+  // Banner fetch on initial load
+  useEffect(() => {
     loadBanner();
   }, []);
 
@@ -207,7 +241,6 @@ function DashBoardHome() {
     return moodMap[value] || '🙂';
   };
 
-
   return (
     <div className="dashboard-home-container">
       {showBanner && banner && (
@@ -229,8 +262,11 @@ function DashBoardHome() {
       <section className="dashboard-section grid-two">
         <div className="card mood-card">
           <div className="card-header">
-            <h3>This Week’s Mood</h3>
-            <a href="#">View All</a>
+            <h3>This Week's Mood</h3>
+            <a href="#" onClick={(e) => {
+              e.preventDefault();
+              setShowMoodLogsModal(true);
+            }}>View All</a>
           </div>
           <p className="mood-text">
             {todayMood
@@ -239,8 +275,14 @@ function DashBoardHome() {
           </p>
 
           <p className="growth-days">
-            {streak > 0 ? `${streak} day${streak > 1 ? 's' : ''} of growth` : '0 days of growth'}
+            {`${weeklyLogs}/7 mood logs this week`}
           </p>
+
+          {streak > 0 && (
+            <p className="streak-count">
+              🔥 {streak} day{streak !== 1 ? 's' : ''} streak
+            </p>
+          )}
 
           <div
             className={`dashboard-tile ${todayMood ? 'disabled-tile' : ''}`}
@@ -290,28 +332,47 @@ function DashBoardHome() {
 
       <section className="dashboard-section habits-section">
         <div className="section-header">
-          <h3>Today’s Habits</h3>
+          <h3>Today's Habits</h3>
           <a onClick={() => navigate('/dashboard/habit')} className="link" style={{ cursor: 'pointer' }}>
             Manage Habits
           </a>
         </div>
         <div className="habits-list">
-          {habits.map((habit) => {
-            const log = logs.find((l) => l.habitId === habit.id);
-            const isCompleted = log?.completed || false;
-            return (
-              <div key={habit.id} className="habit">
-                {habit.title} <input type="checkbox" checked={isCompleted} readOnly />
-              </div>
-            );
-          })}
+          {habits.length === 0 ? (
+            <p>No habits created yet. Add some habits to track your progress!</p>
+          ) : (
+            habits.slice(0, 5).map((habit) => {
+              const log = logs.find((l) => l.habitId === habit.id);
+              const isCompleted = log?.completed || false;
+              return (
+                <div key={habit.id} className="habit">
+                  <span className="habit-title">{habit.title}</span>
+                  <span className="habit-streak">{habit.streak > 0 ? `🔥 ${habit.streak}` : ''}</span>
+                  <input type="checkbox" checked={isCompleted} readOnly />
+                </div>
+              );
+            })
+          )}
+          {habits.length > 5 && (
+            <div className="more-habits">
+              <a onClick={() => navigate('/dashboard/habit')} className="link">
+                +{habits.length - 5} more habits
+              </a>
+            </div>
+          )}
         </div>
       </section>
 
       <section className="dashboard-section quick-actions">
-        <div className="action-tile">📝 Add Journal Entry</div>
-        <div className="action-tile">📊 View Mood Trends</div>
-        <div className="action-tile">✅ View Habits</div>
+        <div className="action-tile" onClick={() => navigate('/dashboard/journal')}>
+          <FaBook className="action-icon" /> Add Journal Entry
+        </div>
+        <div className="action-tile" onClick={() => navigate('/dashboard/mood')}>
+          <FaChartLine className="action-icon" /> View Mood Trend
+        </div>
+        <div className="action-tile" onClick={() => navigate('/dashboard/habit')}>
+          <FaList className="action-icon" /> View Habits
+        </div>
       </section>
 
       <section className="dashboard-section recent-entries">
@@ -337,6 +398,7 @@ function DashBoardHome() {
       </section>
 
       {showWelcomeModal && <WelcomeModal onSave={handleSaveDisplayName} />}
+      {showMoodLogsModal && <MoodLogsModal onClose={() => setShowMoodLogsModal(false)} />}
     </div>
   );
 }

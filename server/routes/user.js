@@ -4,6 +4,7 @@ const checkAuth = require('../middleware/checkAuth');
 const multer = require('multer');
 const path = require('path');
 const handleError = require('../utils/handleError');   // centralized error helper
+const { STATUS } = require('../constants');
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -41,7 +42,7 @@ router.get('/me', checkAuth, async (req, res) => {
       },
     });
 
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (!user) return res.status(STATUS.NOT_FOUND).json({ error: 'User not found' });
     res.json(user);
   } catch (err) {
     return handleError(res, err, 'Failed to fetch user');
@@ -95,7 +96,7 @@ router.patch('/profile', checkAuth, async (req, res) => {
 // POST /api/user/avatar
 router.post('/avatar', checkAuth, upload.single('avatar'), async (req, res) => {
   try {
-    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+    if (!req.file) return res.status(STATUS.BAD_REQUEST).json({ error: 'No file uploaded' });
 
     const avatarUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
 

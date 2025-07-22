@@ -19,7 +19,6 @@ router.get('/recommendation', async (req, res) => {
     // so the client can skip rendering any suggestion gracefully
     return res.json({ banner });
   } catch (e) {
-    console.error('Recommendation error:', e);
     return res
       .status(STATUS.SERVER_ERROR)
       .json({ error: 'Failed to compute recommendation' });

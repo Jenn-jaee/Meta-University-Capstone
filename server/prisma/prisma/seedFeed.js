@@ -88,9 +88,7 @@ const prisma = new PrismaClient();
       },
     });
 
-    console.log('Seed complete');
   } catch (err) {
-    console.error('Seed error:', err);
   } finally {
     await prisma.$disconnect();
   }

@@ -24,6 +24,8 @@ function App() {
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<DashboardHome />} />
           <Route path="journal" element={<JournalPage />} />
+          <Route path="journal/:id" element={<JournalPage />} />
+          <Route path="journal/edit/:id" element={<JournalPage />} />
           <Route path="habit" element={<HabitPage />} />
           <Route path="mood" element={<MoodPage />} />
           <Route path="settings" element={<SettingsPanel />} />

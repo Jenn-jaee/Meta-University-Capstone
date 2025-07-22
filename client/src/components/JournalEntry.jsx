@@ -35,7 +35,7 @@ function JournalEntry({ entry, onEdit, onDelete }) {
       <div className="entry-header">
         <div className="entry-title-section">
           <h3 className="entry-title">
-            <span className="entry-mood">{getMoodEmoji(entry.mood?.value)}</span>
+            <span className="entry-mood">{getMoodEmoji(entry.journalMood)}</span>
             {entry.title}
           </h3>
           <div className="entry-dates">

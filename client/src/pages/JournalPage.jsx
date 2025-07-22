@@ -7,8 +7,11 @@ import { STATUS } from '../api/axiosInstance.js';
 import { checkAndGrowPlant } from '../services/plantService';
 import isToday from 'date-fns/isToday';
 import toast from 'react-hot-toast';
-
 import '../components/Journal.css';
+
+/* ------- toast constants ----- */
+const SAVE_ENTRY_ERROR = 'Unable to save your entry. Please try again.';
+const DELETE_ENTRY_ERROR = 'Unable to delete entry. Please try again.';
 
 function JournalPage() {
   const [entries, setEntries] = useState([]);
@@ -65,11 +68,11 @@ function JournalPage() {
             checkAndGrowPlant();
           }
         } else {
-          toast.error('Unable to save your entry. Please try again.');
+          toast.error(SAVE_ENTRY_ERROR);
         }
       })
       .catch(() =>
-        toast.error('Unable to save your entry. Please try again.')
+        toast.error(SAVE_ENTRY_ERROR)
       );
   };
 
@@ -89,11 +92,11 @@ function JournalPage() {
         if (response.status === STATUS.SUCCESS) {
           fetchEntries();
         } else {
-          toast.error('Unable to delete entry. Please try again.');
+          toast.error(DELETE_ENTRY_ERROR);
         }
       })
       .catch(() =>
-        toast.error('Unable to delete entry. Please try again.')
+        toast.error(DELETE_ENTRY_ERROR)
       );
   };
 

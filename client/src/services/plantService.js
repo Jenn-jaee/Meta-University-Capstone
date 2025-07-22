@@ -20,13 +20,13 @@ export function checkAndGrowPlant(userId) {
       if (shouldGrow) {
         // POST automatically bumps stage by +1 in the backend
         const { data: { level } } = await axiosInstance.post('/api/plant-growth/grow');
-
         return { grown: true, level, logsRemaining };
       }
 
       // 3. No growth needed
       return { grown: false, level: currentStage, logsRemaining };
     })
+
     .catch(() => {
       // Fallback so the UI never crashes
       return { grown: false, level: 1, logsRemaining: 9 };

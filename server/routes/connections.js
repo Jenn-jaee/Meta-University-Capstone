@@ -4,6 +4,7 @@ const { PrismaClient } = require('@prisma/client');
 const checkAuth = require('../middleware/checkAuth');
 const { STATUS } = require('../constants');
 const { formatUserPreview } = require('../utils/connectionHelpers');
+const { invalidateFeed } = require('../utils/invalidateFeed');
 
 const prisma = new PrismaClient();
 
@@ -178,6 +179,10 @@ router.delete('/remove/:otherUserId', (req, res) => {
   })
   .then((result) => {
     if (result && result.count > 0) {
+      // Invalidate feed caches for both users to ensure immediate feed updates
+      invalidateFeed(userId, [otherUserId]);
+      invalidateFeed(otherUserId, [userId]);
+
       res.json({ message: "Connection removed successfully." });
     } else {
       // This should not happen due to the check above, but just in case

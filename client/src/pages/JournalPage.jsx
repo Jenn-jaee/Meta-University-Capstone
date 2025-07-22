@@ -5,6 +5,7 @@ import JournalForm from '../components/JournalForm.jsx';
 import JournalList from '../components/JournalList.jsx';
 import { STATUS } from '../api/axiosInstance.js';
 import { checkAndGrowPlant } from '../services/plantService';
+import { getRandomJournalMessage } from '../utils/journalMessages';
 import isToday from 'date-fns/isToday';
 import toast from 'react-hot-toast';
 
@@ -14,8 +15,14 @@ function JournalPage() {
   const [entries, setEntries] = useState([]);
   const [editingEntry, setEditingEntry] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [journalMessage, setJournalMessage] = useState("");
   const navigate = useNavigate();
   const { id } = useParams();
+
+  // Set a random journal message when the component mounts
+  useEffect(() => {
+    setJournalMessage(getRandomJournalMessage());
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -136,16 +143,33 @@ function JournalPage() {
 
   return (
     <div className="journal-page">
-      <JournalForm
-        onSubmit={handleSubmit}
-        editingEntry={editingEntry}
-        onCancel={() => setEditingEntry(null)}
-      />
-      <JournalList
-        entries={entries}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
+      <div className="journal-header">
+        <h1 className="journal-main-title">
+          <span className="journal-title-icon">📓</span>
+          My Journal
+        </h1>
+        <p className="journal-subtitle">
+          <span className="journal-subtitle-icon">✨</span>
+          {journalMessage}
+        </p>
+      </div>
+
+      {/* Form first, then entries */}
+      <div className="journal-form-section">
+        <JournalForm
+          onSubmit={handleSubmit}
+          editingEntry={editingEntry}
+          onCancel={() => setEditingEntry(null)}
+        />
+      </div>
+
+      <div className="journal-entries-section">
+        <JournalList
+          entries={entries}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      </div>
     </div>
   );
 }

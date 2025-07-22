@@ -21,22 +21,56 @@ ChartJS.register(
   Legend
 );
 
-export function calculateMoodStreak(moodLogs) {
-  if (!moodLogs || moodLogs.length === 0) return 0;
+// Calculate streak correctly - must be consecutive days with no gaps
+export function calculateMoodStreak(logs) {
+  if (!logs || logs.length === 0) return 0;
 
-  const datesSet = new Set(
-    moodLogs.map(entry => new Date(entry.createdAt).toDateString())
-  );
+  // Convert dates to YYYY-MM-DD strings for consistent comparison
+  const toDayString = (date) => {
+    return new Date(date).toISOString().split('T')[0];
+  };
 
-  let streak = 0;
-  let currentDate = new Date();
+  // Get all unique dates with logs
+  const dateSet = new Set();
+  logs.forEach(log => {
+    dateSet.add(toDayString(log.createdAt));
+  });
 
-  while (datesSet.has(currentDate.toDateString())) {
-    streak++;
-    currentDate.setDate(currentDate.getDate() - 1);
+  // Convert to array and sort (newest first)
+  const uniqueDates = Array.from(dateSet).sort().reverse();
+
+  // Find the most recent log date
+  let mostRecentLogDate = uniqueDates[0];
+
+  // If the most recent log is not from today or yesterday, streak is broken
+  const today = toDayString(new Date());
+  if (mostRecentLogDate !== today) {
+    const yesterday = toDayString(new Date(Date.now() - 86400000));
+    if (mostRecentLogDate !== yesterday) {
+      return 0; // Streak is broken
+    }
   }
 
-  return streak;
+  // Start counting streak from most recent log
+  let currentStreak = 1;
+  let currentDate = mostRecentLogDate;
+
+  // Check for consecutive days working backward
+  while (true) {
+    // Get the previous day
+    const prevDate = toDayString(new Date(new Date(currentDate).getTime() - 86400000));
+
+    // If there's a log for the previous day, increment streak
+    if (dateSet.has(prevDate)) {
+      currentStreak++;
+      currentDate = prevDate;
+    } else {
+      // Gap found, streak ends
+      break;
+    }
+  }
+
+  return currentStreak;
 }
 
 function MoodPage() {

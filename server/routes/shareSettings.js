@@ -14,14 +14,16 @@ router.patch('/', (req, res) => {
   const { sharingEnabled, shareMood, shareJournal, shareHabit } = req.body;
   const userId = req.userId;
 
+  // Only include fields that were explicitly provided in the request
+  const updateData = {};
+  if (sharingEnabled !== undefined) updateData.sharingEnabled = sharingEnabled;
+  if (shareMood !== undefined) updateData.shareMood = shareMood;
+  if (shareJournal !== undefined) updateData.shareJournal = shareJournal;
+  if (shareHabit !== undefined) updateData.shareHabit = shareHabit;
+
   prisma.shareSettings.upsert({
     where: { userId },
-    update: {
-      ...(sharingEnabled !== undefined && { sharingEnabled }),
-      ...(shareMood !== undefined && { shareMood }),
-      ...(shareJournal !== undefined && { shareJournal }),
-      ...(shareHabit !== undefined && { shareHabit }),
-    },
+    update: updateData,
     create: {
       userId,
       sharingEnabled: sharingEnabled ?? true,

@@ -73,5 +73,5 @@ const server = http.createServer(app);   // 1. create HTTP server
 initSocket(server, app);
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
-  console.log(`Server + WebSocket running on port ${PORT}`);
+  // Server started successfully
 });

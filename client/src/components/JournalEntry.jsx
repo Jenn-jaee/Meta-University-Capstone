@@ -1,8 +1,6 @@
 import './Journal.css';
 
 function JournalEntry({ entry, onEdit, onDelete }) {
-    console.debug("Journal Entry:", entry);//for debugging
-
     const getMoodEmoji = (value) => {
         const moodEmojis = {
           5: '😊',     // happy

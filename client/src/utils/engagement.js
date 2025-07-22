@@ -51,8 +51,7 @@ export async function getWeeklyEngagement() {
         targetWeeklyLogs
       };
     })
-    .catch((error) => {
-      console.error('Error fetching engagement data:', error);
+    .catch(() => {
       toast.error('Could not load engagement data');
       return {
         percentage: 0,

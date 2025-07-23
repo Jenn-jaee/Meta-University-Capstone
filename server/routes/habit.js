@@ -4,6 +4,7 @@ const checkAuth = require('../middleware/checkAuth');
 const { invalidateFeed } = require('../utils/invalidateFeed');
 const { STATUS } = require('../constants');
 
+
 const router = express.Router();
 const prisma = new PrismaClient();
 
@@ -44,6 +45,7 @@ router.post('/', (req, res) => {
   })
   .catch(() => {
     return res.status(STATUS.SERVER_ERROR).json({ message: 'Failed to create habit' });
+
   });
 });
 
@@ -58,6 +60,7 @@ router.get('/', (req, res) => {
   })
   .catch(() => {
     return res.status(STATUS.SERVER_ERROR).json({ message: 'Failed to fetch habits' });
+
   });
 });
 
@@ -113,6 +116,7 @@ router.patch('/:id/toggle', (req, res) => {
   })
   .catch(() => {
     return res.status(STATUS.SERVER_ERROR).json({ message: 'Failed to toggle habit' });
+
   });
 });
 
@@ -136,6 +140,7 @@ router.delete('/:id', async (req, res) => {
 
     // Get user's connections to invalidate their feed caches
     const connections = await prisma.$queryRaw`
+
       SELECT "userBId" AS id
       FROM "Connection"
       WHERE "userAId" = ${userId}
@@ -154,6 +159,7 @@ router.delete('/:id', async (req, res) => {
   } catch (error) {
     return res.status(STATUS.SERVER_ERROR).json({ message: 'Failed to delete habit' });
   }
+
 });
 
 module.exports = router;

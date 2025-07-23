@@ -4,6 +4,7 @@ const checkAuth = require('../middleware/checkAuth');
 const { invalidateFeed } = require('../utils/invalidateFeed');
 const { STATUS } = require('../constants');
 
+
 const router = express.Router();
 const prisma = new PrismaClient();
 
@@ -11,7 +12,7 @@ const prisma = new PrismaClient();
 router.use(checkAuth);
 
 // POST /api/habit-logs - Create or update today's habit log
-router.post('/', async (req, res) => {
+router.post('/', (req, res) => {
   const userId = req.userId;
   const { habitId, completed } = req.body;
 
@@ -29,8 +30,13 @@ router.post('/', async (req, res) => {
           gte: today,
           lt: endOfToday,
         },
+
       },
-    });
+    },
+  })
+  .then(existingLog => {
+    let resultPromise;
+
 
     // Get the habit details
     const habit = await prisma.habit.findUnique({
@@ -119,12 +125,14 @@ router.post('/', async (req, res) => {
     if (existingLog) {
       // Update existing log if one exists for today
       result = await prisma.habitLog.update({
+
         where: { id: existingLog.id },
         data: { completed },
       });
     } else {
       // Create new log if none exists for today
       result = await prisma.habitLog.create({
+
         data: {
           userId,
           habitId,
@@ -180,6 +188,7 @@ router.get('/today', (req, res) => {
   endOfDay.setHours(23, 59, 59, 999);
 
   // Find all habit logs for today
+
   prisma.habitLog.findMany({
     where: {
       userId,
@@ -194,6 +203,7 @@ router.get('/today', (req, res) => {
   })
   .catch(() => {
     return res.status(STATUS.SERVER_ERROR).json({ message: 'Failed to fetch habit logs' });
+
   });
 });
 

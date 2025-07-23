@@ -5,6 +5,7 @@ const { PrismaClient } = require('@prisma/client');
 const { STATUS } = require('../constants');
 const cache = require('../utils/cache');
 
+
 const prisma = new PrismaClient();
 const PAGE_LIMIT = 10;
 
@@ -25,6 +26,7 @@ router.get('/', checkAuth, (req, res) => {
   const cacheKey = req.query.cursor
     ? `feed:${userId}:cursor:${cursor.toISOString()}`
     : `feed:${userId}:first`;
+
 
   // Return cached response if available
   const cached = cache.get(cacheKey);
@@ -66,7 +68,9 @@ router.get('/', checkAuth, (req, res) => {
         if (!userSettings) return true; // Default to sharing everything if no settings found
 
         // If master toggle is off, don't share anything
+
         if (!userSettings.sharingEnabled) return false;
+
 
         if (type === 'MOOD') return userSettings.shareMood;
         if (type === 'JOURNAL') return userSettings.shareJournal;
@@ -168,6 +172,7 @@ router.get('/', checkAuth, (req, res) => {
             ...transformedHabitLogs
           ].sort((a, b) => b.createdAt - a.createdAt)
            .slice(0, PAGE_LIMIT + 1);
+
         // Filter results based on privacy settings
         const filtered = raw.filter((item) => canShow(item.userId, item.type));
 
@@ -176,6 +181,7 @@ router.get('/', checkAuth, (req, res) => {
         const nextCursor = filtered.length > PAGE_LIMIT
           ? filtered[PAGE_LIMIT].createdAt
           : null;
+
 
         const payload = { items, nextCursor };
 

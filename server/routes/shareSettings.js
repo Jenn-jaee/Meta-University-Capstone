@@ -2,7 +2,9 @@ const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const checkAuth = require('../middleware/checkAuth');
 const { STATUS } = require('../constants');
+
 const { invalidateFeed } = require('../utils/invalidateFeed');
+
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -14,6 +16,7 @@ router.patch('/', (req, res) => {
   const { sharingEnabled, shareMood, shareJournal, shareHabit } = req.body;
   const userId = req.userId;
 
+
   // Only include fields that were explicitly provided in the request
   const updateData = {};
   if (sharingEnabled !== undefined) updateData.sharingEnabled = sharingEnabled;
@@ -24,6 +27,7 @@ router.patch('/', (req, res) => {
   prisma.shareSettings.upsert({
     where: { userId },
     update: updateData,
+
     create: {
       userId,
       sharingEnabled: sharingEnabled ?? true,
@@ -56,6 +60,7 @@ router.patch('/', (req, res) => {
         // Still return success even if cache invalidation fails
         res.json(updatedSettings);
       });
+
     })
     .catch(() => {
       res.status(STATUS.SERVER_ERROR).json({ error: 'Failed to update sharing settings.' });

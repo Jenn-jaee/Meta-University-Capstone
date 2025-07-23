@@ -39,6 +39,8 @@ const shareSettingsRoutes = require('./routes/shareSettings');
 const connectionRequestRoutes = require('./routes/connectionRequests');
 const connectionRoutes = require('./routes/connections');
 
+
+
 app.use('/api/auth', authRoutes);
 app.use('/api/journal', journalRoutes);
 app.use('/api/habits', habitRoutes);
@@ -51,6 +53,7 @@ app.use('/api/feed', feedRoutes);
 app.use('/api/share-settings', shareSettingsRoutes);
 app.use('/api/connection-requests', connectionRequestRoutes);
 app.use('/api/connections', connectionRoutes);
+
 
 //Test route
 app.get('/', (req, res) => {

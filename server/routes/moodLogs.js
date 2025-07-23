@@ -77,6 +77,7 @@ router.post('/', (req, res) => {
           });
         }
 
+
         return res.status(STATUS.SUCCESS).json(newMoodLog);
       });
     });

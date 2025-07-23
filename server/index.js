@@ -37,6 +37,7 @@ const moodLogsRoute = require('./routes/moodLogs');
 const plantGrowthRoutes = require('./routes/plantGrowth');
 const recoRoute = require('./routes/analyticsRecommendation');
 const feedRoutes = require('./routes/feed');
+const shareSettingsRoutes = require('./routes/shareSettings');
 
 
 app.use('/api/auth', authRoutes);
@@ -48,10 +49,7 @@ app.use('/api/mood-logs', moodLogsRoute);
 app.use('/api/plant-growth', plantGrowthRoutes);
 app.use('/api', recoRoute);
 app.use('/api/feed', feedRoutes);
-
-
-
-
+app.use('/api/share-settings', shareSettingsRoutes);
 
 //Test route
 app.get('/', (req, res) => {

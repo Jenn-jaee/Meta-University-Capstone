@@ -1,4 +1,3 @@
-// pages/HabitPage.jsx
 import React, { useState } from 'react';
 import HabitForm from '../components/HabitForm';
 import HabitList from '../components/HabitList';
@@ -18,6 +17,10 @@ function HabitPage() {
 
   const triggerRefresh = () => {
     setRefreshFlag((prev) => !prev);
+    // Force a small delay to ensure the component fully remounts
+    setTimeout(() => {
+      setRefreshFlag((prev) => !prev);
+    }, 10);
   };
 
   return (

@@ -24,6 +24,9 @@ export function checkAndGrowPlant(userId) {
       }
 
       // 3. No growth needed
+      return { grown: false, level: currentStage, logsRemaining };
+    })
+
     .catch(() => {
       // Fallback so the UI never crashes
       return { grown: false, level: 1, logsRemaining: 9 };

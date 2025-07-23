@@ -41,9 +41,11 @@ async function main() {
     }
   }
 
-  console.log(`Seeded ${DAYS} days of data for user ${USER_ID}`);
+  // Seeding complete
 }
 
 main()
-  .catch(console.error)
+  .catch((err) => {
+    // Handle error silently
+  })
   .finally(() => prisma.$disconnect());

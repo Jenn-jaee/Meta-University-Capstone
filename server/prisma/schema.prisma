@@ -45,6 +45,10 @@ model User {
   connectionsA Connection[] @relation("UserAConnections")
   connectionsB Connection[] @relation("UserBConnections")
 
+  // Connection requests
+  sentRequests     ConnectionRequest[] @relation("SentRequests")
+  receivedRequests ConnectionRequest[] @relation("ReceivedRequests")
+
   // Sharing settings (1:1)
   shareSettings ShareSettings?
 }
@@ -56,7 +60,7 @@ model JournalEntry {
   content   String
   journalMood  Int?     // 0-5 scale for emoji, not tied to MoodLog
   createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   //Relationships
   userId String
@@ -133,6 +137,24 @@ model Connection {
   userB User @relation("UserBConnections", fields: [userBId], references: [id])
 
   @@unique([userAId, userBId])  // prevents duplicates
+  @@index([userAId])  // index for better query performance
+  @@index([userBId])  // index for better query performance
+}
+
+/// Stores pending connection requests between users.
+/// When a request is accepted, it's deleted and a Connection is created.
+model ConnectionRequest {
+  id          String   @id @default(uuid())
+  senderId    String
+  receiverId  String
+  createdAt   DateTime @default(now())
+
+  sender   User @relation("SentRequests", fields: [senderId], references: [id])
+  receiver User @relation("ReceivedRequests", fields: [receiverId], references: [id])
+
+  @@unique([senderId, receiverId])  // prevents duplicate requests
+  @@index([senderId])  // index for better query performance
+  @@index([receiverId])  // index for better query performance
 }
 
 /// Each user decides which activities are visible to their connections.

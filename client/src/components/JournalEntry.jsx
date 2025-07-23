@@ -1,8 +1,6 @@
 import './Journal.css';
 
 function JournalEntry({ entry, onEdit, onDelete }) {
-    console.debug("Journal Entry:", entry);//for debugging
-
     const getMoodEmoji = (value) => {
         const moodEmojis = {
           5: '😊',     // happy
@@ -27,15 +25,21 @@ function JournalEntry({ entry, onEdit, onDelete }) {
     });
   };
 
+  // Check if the entry has been updated after creation
+  const hasBeenEdited = new Date(entry.updatedAt).getTime() > new Date(entry.createdAt).getTime();
+
   return (
     <div className="journal-entry panel">
       <div className="entry-header">
         <div className="entry-title-section">
           <h3 className="entry-title">
-            <span className="entry-mood">{getMoodEmoji(entry.mood?.value)}</span>
+            <span className="entry-mood">{getMoodEmoji(entry.journalMood)}</span>
             {entry.title}
           </h3>
-          <p className="entry-date">{formatDate(entry.createdAt)}</p>
+          <div className="entry-dates">
+            <p className="entry-date">Created: {formatDate(entry.createdAt)}</p>
+            {hasBeenEdited && <p className="entry-date">Last edited: {formatDate(entry.updatedAt)}</p>}
+          </div>
         </div>
         <div className="entry-actions">
           <button

@@ -3,22 +3,23 @@ import { useNavigate } from 'react-router-dom';
 import axios from '../api/axiosInstance';
 import ProfileInfoSection from './settings/ProfileInfoSection';
 import PreferencesSection from './settings/PreferencesSection';
+import ShareSettingsSection from './settings/ShareSettingsSection';
 
 import './SettingsPanel.css';
 
 function SettingsPanel() {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
-  /* ─── Fetch user once ─── */
   useEffect(() => {
     axios
       .get('/api/user/me')
       .then((res) => setUser(res.data))
       .catch(() => {
+        // Handle error silently - user will be null
       });
   }, []);
 
-  if (!user) return null; // could be a spinner
+  if (!user) return null; // Loading state
 
   return (
     <div className="settings-panel">
@@ -42,6 +43,8 @@ function SettingsPanel() {
         user={user}
         onPrefsUpdate={(newPrefs) => setUser({ ...user, ...newPrefs })}
       />
+
+      <ShareSettingsSection />
     </div>
   );
 }

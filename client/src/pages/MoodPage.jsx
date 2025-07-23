@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from '../api/axiosInstance.js';
 import './MoodPage.css';
 import { Line } from 'react-chartjs-2';
+import { calculateMoodStreak } from '../utils/moodUtils';
 import {
   Chart as ChartJS,
   LineElement,
@@ -21,26 +22,8 @@ ChartJS.register(
   Legend
 );
 
-export function calculateMoodStreak(moodLogs) {
-  if (!moodLogs || moodLogs.length === 0) return 0;
-
-  const datesSet = new Set(
-    moodLogs.map(entry => new Date(entry.createdAt).toDateString())
-  );
-
-  let streak = 0;
-  let currentDate = new Date();
-
-  while (datesSet.has(currentDate.toDateString())) {
-    streak++;
-    currentDate.setDate(currentDate.getDate() - 1);
-  }
-
-  return streak;
-}
-
 function MoodPage() {
-  const [moodLogs, setMoodLogs] = useState([]);
+  const [, setMoodLogs] = useState([]);
   const [chartData, setChartData] = useState(null);
   const [streak, setStreak] = useState(0);
 
@@ -75,7 +58,7 @@ function MoodPage() {
         setStreak(calculateMoodStreak(res.data));
 
       } catch (err) {
-        console.error('Error fetching mood logs:', err);
+        // Error handled silently - UI will show loading state
       }
     };
 

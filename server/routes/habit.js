@@ -2,6 +2,8 @@ const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const checkAuth = require('../middleware/checkAuth');
 const { invalidateFeed } = require('../utils/invalidateFeed');
+const { STATUS } = require('../constants');
+
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -42,7 +44,8 @@ router.post('/', (req, res) => {
     });
   })
   .catch(() => {
-    return res.status(500).json({ message: 'Failed to create habit' });
+    return res.status(STATUS.SERVER_ERROR).json({ message: 'Failed to create habit' });
+
   });
 });
 
@@ -56,7 +59,8 @@ router.get('/', (req, res) => {
     return res.json(habits);
   })
   .catch(() => {
-    return res.status(500).json({ message: 'Failed to fetch habits' });
+    return res.status(STATUS.SERVER_ERROR).json({ message: 'Failed to fetch habits' });
+
   });
 });
 
@@ -90,21 +94,20 @@ router.put('/:id', (req, res) => {
     });
   })
   .catch(() => {
-    return res.status(500).json({ message: 'Failed to update habit' });
+    return res.status(STATUS.SERVER_ERROR).json({ message: 'Failed to update habit' });
   });
 });
 
-// PATCH /api/habits/:id/toggle - Toggle active status or increment streak
+// PATCH /api/habits/:id/toggle - Toggle active status
 router.patch('/:id/toggle', (req, res) => {
   prisma.habit.findUnique({ where: { id: req.params.id } })
   .then(habit => {
-    if (!habit) return res.status(404).json({ message: 'Habit not found' });
+    if (!habit) return res.status(STATUS.NOT_FOUND).json({ message: 'Habit not found' });
 
     return prisma.habit.update({
       where: { id: req.params.id },
       data: {
         isActive: !habit.isActive,
-        streak: habit.isActive ? habit.streak : habit.streak + 1,
       },
     })
     .then(updated => {
@@ -112,18 +115,32 @@ router.patch('/:id/toggle', (req, res) => {
     });
   })
   .catch(() => {
-    return res.status(500).json({ message: 'Failed to toggle habit' });
+    return res.status(STATUS.SERVER_ERROR).json({ message: 'Failed to toggle habit' });
+
   });
 });
 
-// DELETE /api/habits/:id - Delete a habit
-router.delete('/:id', (req, res) => {
-  const userId = req.userId;
 
-  prisma.habit.delete({ where: { id: req.params.id } })
-  .then(() => {
+// DELETE /api/habits/:id - Delete a habit
+
+router.delete('/:id', async (req, res) => {
+  const userId = req.userId;
+  const habitId = req.params.id;
+
+  try {
+    // First delete all associated habit logs
+    await prisma.habitLog.deleteMany({
+      where: { habitId }
+    });
+
+    // Then delete the habit itself
+    await prisma.habit.delete({
+      where: { id: habitId }
+    });
+
     // Get user's connections to invalidate their feed caches
-    return prisma.$queryRaw`
+    const connections = await prisma.$queryRaw`
+
       SELECT "userBId" AS id
       FROM "Connection"
       WHERE "userAId" = ${userId}
@@ -131,19 +148,18 @@ router.delete('/:id', (req, res) => {
       SELECT "userAId" AS id
       FROM "Connection"
       WHERE "userBId" = ${userId};
-    `
-    .then(connections => {
-      const connectionIds = connections.map((c) => c.id);
+    `;
 
-      // Invalidate feed caches
-      invalidateFeed(userId, connectionIds);
+    const connectionIds = connections.map((c) => c.id);
 
-      return res.json({ message: 'Habit deleted successfully' });
-    });
-  })
-  .catch(() => {
-    return res.status(500).json({ message: 'Failed to delete habit' });
-  });
+    // Invalidate feed caches
+    invalidateFeed(userId, connectionIds);
+
+    return res.status(STATUS.SUCCESS).json({ message: 'Habit deleted successfully' });
+  } catch (error) {
+    return res.status(STATUS.SERVER_ERROR).json({ message: 'Failed to delete habit' });
+  }
+
 });
 
 module.exports = router;

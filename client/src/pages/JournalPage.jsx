@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from '../api/axiosInstance.js';
 import JournalForm from '../components/JournalForm.jsx';
 import JournalList from '../components/JournalList.jsx';
 import { STATUS } from '../api/axiosInstance.js';
 import { checkAndGrowPlant } from '../services/plantService';
+import { getRandomJournalMessage } from '../utils/journalMessages';
 import isToday from 'date-fns/isToday';
 import toast from 'react-hot-toast';
 import '../components/Journal.css';
@@ -17,7 +18,14 @@ function JournalPage() {
   const [entries, setEntries] = useState([]);
   const [editingEntry, setEditingEntry] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [journalMessage, setJournalMessage] = useState("");
   const navigate = useNavigate();
+  const { id } = useParams();
+
+  // Set a random journal message when the component mounts
+  useEffect(() => {
+    setJournalMessage(getRandomJournalMessage());
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -27,6 +35,33 @@ function JournalPage() {
     }
     fetchEntries();
   }, [navigate]);
+
+  // Handle viewing or editing a specific entry based on URL params
+  useEffect(() => {
+    if (id && entries.length > 0) {
+      const currentPath = window.location.pathname;
+      const entry = entries.find(e => e.id === id);
+
+      if (entry) {
+        if (currentPath.includes('/edit/')) {
+          // Edit mode
+          setEditingEntry(entry);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          // View mode - scroll to the entry
+          const entryElement = document.getElementById(`journal-entry-${id}`);
+          if (entryElement) {
+            entryElement.scrollIntoView({ behavior: 'smooth' });
+            // Add a highlight effect
+            entryElement.classList.add('highlight-entry');
+            setTimeout(() => {
+              entryElement.classList.remove('highlight-entry');
+            }, 2000);
+          }
+        }
+      }
+    }
+  }, [id, entries]);
 
   /* -------- Fetch all journal entries -------- */
   const fetchEntries = () => {
@@ -111,16 +146,33 @@ function JournalPage() {
 
   return (
     <div className="journal-page">
-      <JournalForm
-        onSubmit={handleSubmit}
-        editingEntry={editingEntry}
-        onCancel={() => setEditingEntry(null)}
-      />
-      <JournalList
-        entries={entries}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
+      <div className="journal-header">
+        <h1 className="journal-main-title">
+          <span className="journal-title-icon">📓</span>
+          My Journal
+        </h1>
+        <p className="journal-subtitle">
+          <span className="journal-subtitle-icon">✨</span>
+          {journalMessage}
+        </p>
+      </div>
+
+      {/* Form first, then entries */}
+      <div className="journal-form-section">
+        <JournalForm
+          onSubmit={handleSubmit}
+          editingEntry={editingEntry}
+          onCancel={() => setEditingEntry(null)}
+        />
+      </div>
+
+      <div className="journal-entries-section">
+        <JournalList
+          entries={entries}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      </div>
     </div>
   );
 }

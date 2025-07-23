@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import './Journal.css';
 import { moodMap, moodOptions } from '../utils/moodUtils';
+import { MoodIcons } from './MoodIcons';
 
 function JournalForm({ onSubmit, editingEntry, onCancel }) {
   const [title, setTitle] = useState('');
@@ -55,10 +56,13 @@ function JournalForm({ onSubmit, editingEntry, onCancel }) {
         />
 
         <div className="mood-selector">
-          <label className="mood-label">How are you feeling?</label>
+          <label className="mood-label">How are you feeling today?</label>
           <div className="mood-options">
             {moodOptions.map((m) => (
-              <label key={m.value} className="mood-option">
+              <label
+                key={m.value}
+                className={`mood-option ${mood === m.value ? 'mood-selected' : ''}`}
+              >
                 <input
                   type="radio"
                   name="mood"
@@ -67,7 +71,14 @@ function JournalForm({ onSubmit, editingEntry, onCancel }) {
                   onChange={(e) => setMood(e.target.value)}
                   className="mood-radio"
                 />
-                <span className="mood-emoji">{m.emoji}</span>
+                <span className="mood-icon">
+                  {m.value === 'happy' && <MoodIcons.Happy />}
+                  {m.value === 'excited' && <MoodIcons.Excited />}
+                  {m.value === 'neutral' && <MoodIcons.Neutral />}
+                  {m.value === 'anxious' && <MoodIcons.Anxious />}
+                  {m.value === 'sad' && <MoodIcons.Sad />}
+                  {m.value === 'angry' && <MoodIcons.Angry />}
+                </span>
                 <span className="mood-text">{m.label}</span>
               </label>
             ))}

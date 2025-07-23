@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../api/axiosInstance';
 import toast from 'react-hot-toast';
-import { FaBook, FaChartLine, FaList } from 'react-icons/fa';
+import { FaBook, FaChartLine, FaList, FaCalendarAlt, FaEdit, FaEye } from 'react-icons/fa';
 import WelcomeModal from '../components/WelcomeModal';
 import MoodModal from '../components/MoodModal';
 import MoodLogsModal from '../components/MoodLogsModal';
@@ -381,19 +381,50 @@ function DashBoardHome() {
             View All
           </a>
         </div>
-        {Array.isArray(entries) && entries.slice(0, 3).map((entry) => (
-          <div key={entry.id} className="entry">
-            <p className="entry-date">
-              {new Date(entry.createdAt).toLocaleDateString()}
-            </p>
-            <p className="entry-snippet">
-              {entry.content?.slice(0, 100)}...
-            </p>
-            <span className="emoji">
-              {entry.mood?.emoji || '📝'}
-            </span>
+        {Array.isArray(entries) && entries.length > 0 ? (
+          entries.slice(0, 3).map((entry) => (
+            <div
+              key={entry.id}
+              className="entry"
+              onClick={() => navigate(`/dashboard/journal/${entry.id}`)}
+            >
+              <div className="entry-header">
+                <p className="entry-date">
+                  <FaCalendarAlt /> {new Date(entry.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+              <p className="entry-snippet">
+                {entry.content?.slice(0, 100)}...
+              </p>
+              <div className="entry-actions">
+                <button
+                  className="entry-action-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/dashboard/journal/${entry.id}`);
+                  }}
+                  title="View full entry"
+                >
+                  <FaEye /> View
+                </button>
+                <button
+                  className="entry-action-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/dashboard/journal/edit/${entry.id}`);
+                  }}
+                  title="Edit this entry"
+                >
+                  <FaEdit /> Edit
+                </button>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="entry">
+            <p className="entry-snippet">No journal entries yet. Start writing today!</p>
           </div>
-        ))}
+        )}
       </section>
 
       {showWelcomeModal && <WelcomeModal onSave={handleSaveDisplayName} />}

@@ -1,23 +1,12 @@
 import './Journal.css';
+import { getMoodIcon } from './MoodIcons';
 
 function JournalEntry({ entry, onEdit, onDelete }) {
-    const getMoodEmoji = (value) => {
-        const moodEmojis = {
-          5: '😊',     // happy
-          4: '🤩',     // excited
-          3: '😐',     // neutral
-          2: '😰',     // anxious
-          1: '😢',     // sad
-          0: '😠'      // angry
-        };
-        return moodEmojis[value] || '😐';
-      };
-
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
-      month: 'short',
+      month: 'long',
       day: 'numeric',
       year: 'numeric',
       hour: '2-digit',
@@ -29,11 +18,18 @@ function JournalEntry({ entry, onEdit, onDelete }) {
   const hasBeenEdited = new Date(entry.updatedAt).getTime() > new Date(entry.createdAt).getTime();
 
   return (
-    <div className="journal-entry panel">
+    <div id={`journal-entry-${entry.id}`} className="journal-entry panel">
       <div className="entry-header">
         <div className="entry-title-section">
           <h3 className="entry-title">
-            <span className="entry-mood">{getMoodEmoji(entry.journalMood)}</span>
+            <div className="entry-mood-container">
+              <span className="entry-mood">
+                {getMoodIcon(entry.journalMood).icon}
+              </span>
+              <span className="entry-mood-name">
+                {getMoodIcon(entry.journalMood).name}
+              </span>
+            </div>
             {entry.title}
           </h3>
           <div className="entry-dates">

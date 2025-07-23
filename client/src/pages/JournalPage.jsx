@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from '../api/axiosInstance.js';
 import JournalForm from '../components/JournalForm.jsx';
 import JournalList from '../components/JournalList.jsx';
@@ -15,6 +15,7 @@ function JournalPage() {
   const [editingEntry, setEditingEntry] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { id } = useParams();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -24,6 +25,33 @@ function JournalPage() {
     }
     fetchEntries();
   }, [navigate]);
+
+  // Handle viewing or editing a specific entry based on URL params
+  useEffect(() => {
+    if (id && entries.length > 0) {
+      const currentPath = window.location.pathname;
+      const entry = entries.find(e => e.id === id);
+
+      if (entry) {
+        if (currentPath.includes('/edit/')) {
+          // Edit mode
+          setEditingEntry(entry);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          // View mode - scroll to the entry
+          const entryElement = document.getElementById(`journal-entry-${id}`);
+          if (entryElement) {
+            entryElement.scrollIntoView({ behavior: 'smooth' });
+            // Add a highlight effect
+            entryElement.classList.add('highlight-entry');
+            setTimeout(() => {
+              entryElement.classList.remove('highlight-entry');
+            }, 2000);
+          }
+        }
+      }
+    }
+  }, [id, entries]);
 
   /* -------- Fetch all journal entries -------- */
   const fetchEntries = () => {

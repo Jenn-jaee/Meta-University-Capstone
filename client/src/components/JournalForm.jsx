@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import './Journal.css';
+import { moodMap, moodOptions } from '../utils/moodUtils';
 
 function JournalForm({ onSubmit, editingEntry, onCancel }) {
   const [title, setTitle] = useState('');
@@ -10,19 +11,7 @@ function JournalForm({ onSubmit, editingEntry, onCancel }) {
     if (editingEntry) {
       setTitle(editingEntry.title);
       setContent(editingEntry.content);
-
-      // Map the numeric journalMood back to the string value
-      const moodMap = {
-        0: 'angry',
-        1: 'sad',
-        2: 'anxious',
-        3: 'neutral',
-        4: 'excited',
-        5: 'happy'
-      };
-
       setMood(editingEntry.journalMood !== undefined ? moodMap[editingEntry.journalMood] : 'neutral');
-
     } else {
       setTitle('');
       setContent('');
@@ -31,38 +20,15 @@ function JournalForm({ onSubmit, editingEntry, onCancel }) {
   }, [editingEntry]);
 
   const handleSubmit = (e) => {
-
     e.preventDefault();
-    const moodMap = {
-    happy: 5,
-    excited: 4,
-    neutral: 3,
-    anxious: 2,
-    sad: 1,
-    angry: 0
-    };
-
-    // Check if the user has selected a mood
-    console.debug("Selected mood:", mood); //for debugging
-    console.debug("Mapped journalMood:", moodMap[mood]); //for debugging
-
-
     onSubmit({ title, content, journalMood: moodMap[mood] || 3 });
     if (!editingEntry) {
-        setTitle('');
-        setContent('');
-        setMood('neutral');
-        }
-    };
+      setTitle('');
+      setContent('');
+      setMood('neutral');
+    }
+  };
 
-  const journalmoods = [
-    { value: 'happy', emoji: '😊', label: 'Happy' },
-    { value: 'sad', emoji: '😢', label: 'Sad' },
-    { value: 'angry', emoji: '😠', label: 'Angry' },
-    { value: 'anxious', emoji: '😰', label: 'Anxious' },
-    { value: 'excited', emoji: '🤩', label: 'Excited' },
-    { value: 'neutral', emoji: '😐', label: 'Neutral' }
-  ];
 
   return (
     <div className="journal-form-container panel">
@@ -91,7 +57,7 @@ function JournalForm({ onSubmit, editingEntry, onCancel }) {
         <div className="mood-selector">
           <label className="mood-label">How are you feeling?</label>
           <div className="mood-options">
-            {journalmoods.map((m) => (
+            {moodOptions.map((m) => (
               <label key={m.value} className="mood-option">
                 <input
                   type="radio"

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../api/axiosInstance';
 import toast from 'react-hot-toast';
-import { FaBook, FaChartLine, FaList } from 'react-icons/fa';
+import { FaBook, FaChartLine, FaList, FaCalendarAlt, FaEdit, FaEye } from 'react-icons/fa';
 import WelcomeModal from '../components/WelcomeModal';
 import MoodModal from '../components/MoodModal';
 import MoodLogsModal from '../components/MoodLogsModal';
@@ -10,6 +10,7 @@ import PlantGrid from '../components/PlantGrid';
 import { checkAndGrowPlant } from '../services/plantService';
 import ProgressRing from '../components/ProgressRing';
 import { getWeeklyEngagement } from '../utils/engagement.js';
+import { calculateMoodStreak } from '../utils/moodUtils';
 import RecommendationBanner from '../components/RecommendationBanner.jsx';
 import './DashboardHome.css';
 
@@ -76,59 +77,6 @@ function DashBoardHome() {
     }
   }, [displayName]);
 
-  // Helper function to calculate streak from mood logs
-  const calculateStreak = (logs) => {
-    if (!logs || logs.length === 0) return 0;
-
-    // Convert dates to YYYY-MM-DD strings
-    const toDayString = (date) => {
-      return new Date(date).toISOString().split('T')[0];
-    };
-
-    // Get all unique dates with logs
-    const dateSet = new Set();
-    logs.forEach(log => {
-      dateSet.add(toDayString(log.createdAt));
-    });
-
-    // Convert to array and sort (newest first)
-    const uniqueDates = Array.from(dateSet).sort().reverse();
-
-    // Check if there's a log for today
-    const today = toDayString(new Date());
-
-    // Find the most recent log date
-    let mostRecentLogDate = uniqueDates[0];
-
-    // If the most recent log is not from today or yesterday, streak is broken
-    if (mostRecentLogDate !== today) {
-      const yesterday = toDayString(new Date(Date.now() - 86400000));
-      if (mostRecentLogDate !== yesterday) {
-        return 0;
-      }
-    }
-
-    // Start counting streak from most recent log
-    let currentStreak = 1;
-    let currentDate = mostRecentLogDate;
-
-    // Check for consecutive days working backward
-    while (true) {
-      // Get the previous day
-      const prevDate = toDayString(new Date(new Date(currentDate).getTime() - 86400000));
-
-      // If there's a log for the previous day, increment streak
-      if (dateSet.has(prevDate)) {
-        currentStreak++;
-        currentDate = prevDate;
-      } else {
-        // Gap found, streak ends
-        break;
-      }
-    }
-
-    return currentStreak;
-  };
 
   // Fetch mood logs and calculate weekly logs count and streak
   // This will run on initial load and whenever todayMood changes
@@ -156,11 +104,10 @@ function DashBoardHome() {
         setWeeklyLogs(weeklyLogsSet.size);
 
         // Calculate streak using only mood logs
-        const currentStreak = calculateStreak(moodLogs);
+        const currentStreak = calculateMoodStreak(moodLogs);
         setStreak(currentStreak);
 
       } catch (error) {
-        console.error('Error fetching logs:', error);
         toast.error('Unable to load logs.');
         setWeeklyLogs(0);
         setStreak(0);
@@ -435,19 +382,50 @@ function DashBoardHome() {
             View All
           </a>
         </div>
-        {Array.isArray(entries) && entries.slice(0, 3).map((entry) => (
-          <div key={entry.id} className="entry">
-            <p className="entry-date">
-              {new Date(entry.createdAt).toLocaleDateString()}
-            </p>
-            <p className="entry-snippet">
-              {entry.content?.slice(0, 100)}...
-            </p>
-            <span className="emoji">
-              {entry.mood?.emoji || '📝'}
-            </span>
+        {Array.isArray(entries) && entries.length > 0 ? (
+          entries.slice(0, 3).map((entry) => (
+            <div
+              key={entry.id}
+              className="entry"
+              onClick={() => navigate(`/dashboard/journal/${entry.id}`)}
+            >
+              <div className="entry-header">
+                <p className="entry-date">
+                  <FaCalendarAlt /> {new Date(entry.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+              <p className="entry-snippet">
+                {entry.content?.slice(0, 100)}...
+              </p>
+              <div className="entry-actions">
+                <button
+                  className="entry-action-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/dashboard/journal/${entry.id}`);
+                  }}
+                  title="View full entry"
+                >
+                  <FaEye /> View
+                </button>
+                <button
+                  className="entry-action-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/dashboard/journal/edit/${entry.id}`);
+                  }}
+                  title="Edit this entry"
+                >
+                  <FaEdit /> Edit
+                </button>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="entry">
+            <p className="entry-snippet">No journal entries yet. Start writing today!</p>
           </div>
-        ))}
+        )}
       </section>
 
       {showWelcomeModal && <WelcomeModal onSave={handleSaveDisplayName} />}

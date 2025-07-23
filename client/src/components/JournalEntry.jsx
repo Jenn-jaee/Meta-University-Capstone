@@ -1,8 +1,6 @@
 import './Journal.css';
 
 function JournalEntry({ entry, onEdit, onDelete }) {
-    console.debug("Journal Entry:", entry);//for debugging
-
     const getMoodEmoji = (value) => {
         const moodEmojis = {
           5: '😊',     // happy
@@ -31,7 +29,7 @@ function JournalEntry({ entry, onEdit, onDelete }) {
   const hasBeenEdited = new Date(entry.updatedAt).getTime() > new Date(entry.createdAt).getTime();
 
   return (
-    <div className="journal-entry panel">
+    <div id={`journal-entry-${entry.id}`} className="journal-entry panel">
       <div className="entry-header">
         <div className="entry-title-section">
           <h3 className="entry-title">

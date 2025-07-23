@@ -3,7 +3,7 @@ const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
 const checkAuth = require('../middleware/checkAuth');
 const { STATUS } = require('../constants');
-const { formatUserPreview } = require('../utils/connectionHelpers');
+const { formatUserPreview, validateRequestAccess } = require('../utils/connectionHelpers');
 const rateLimit = require('express-rate-limit');
 
 const prisma = new PrismaClient();
@@ -143,7 +143,7 @@ router.post('/accept/:requestId', async (req, res) => {
       include: { sender: true }
     });
 
-    if (!request || request.receiverId !== userId) {
+    if (!validateRequestAccess(request, userId, 'receiver')) {
       return res.status(STATUS.NOT_FOUND).json({ error: "Request not found." });
     }
 
@@ -189,7 +189,7 @@ router.delete('/decline/:requestId', (req, res) => {
     where: { id: requestId },
   })
   .then((request) => {
-    if (!request || request.receiverId !== userId) {
+    if (!validateRequestAccess(request, userId, 'receiver')) {
       return res.status(STATUS.NOT_FOUND).json({ error: "Request not found." });
     }
 
@@ -210,7 +210,7 @@ router.delete('/cancel/:requestId', (req, res) => {
     where: { id: requestId },
   })
   .then((request) => {
-    if (!request || request.senderId !== userId) {
+    if (!validateRequestAccess(request, userId, 'sender')) {
       return res.status(STATUS.NOT_FOUND).json({ error: "Request not found." });
     }
 

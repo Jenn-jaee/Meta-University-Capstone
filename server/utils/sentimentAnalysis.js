@@ -1,41 +1,38 @@
+const {
+  POSITIVE_WORDS,
+  NEGATIVE_WORDS,
+  INTENSITY_WORDS,
+  DISTRESS_WORDS,
+  UPLIFT_WORDS
+} = require('./sentimentWords');
 
-const positiveWords = [
-  'happy', 'joy', 'excited', 'great', 'good', 'wonderful', 'amazing',
-  'fantastic', 'pleased', 'delighted', 'grateful', 'thankful', 'love',
-  'enjoy', 'positive', 'optimistic', 'hopeful', 'confident', 'proud'
-];
-
-const negativeWords = [
-  'sad', 'angry', 'upset', 'frustrated', 'disappointed', 'worried',
-  'anxious', 'stressed', 'depressed', 'unhappy', 'miserable', 'hate',
-  'terrible', 'awful', 'bad', 'negative', 'pessimistic', 'hopeless'
-];
-
-const intensityWords = [
-  'very', 'extremely', 'incredibly', 'really', 'so', 'absolutely',
-  'completely', 'totally', 'utterly', 'deeply', 'profoundly'
-];
+// Convert Sets to Arrays for backward compatibility with existing code
+const positiveWords = Array.from(POSITIVE_WORDS);
+const negativeWords = Array.from(NEGATIVE_WORDS);
+const intensityWords = Array.from(INTENSITY_WORDS);
 
 /**
  * Utility to count matches of word list in a given array of words
+ * Optimized version using Set for O(1) lookups
  */
 function countWordMatches(words, wordList) {
-  let count = 0;
-  const found = new Set();
+  // Convert wordList to a Set for O(1) lookups if it's not already a Set
+  const wordSet = wordList instanceof Set ? wordList : new Set(wordList);
 
-  for (const word of words) {
-    if (wordList.includes(word)) {
-      count++;
-      found.add(word);
-    }
-  }
+  // Convert words to a Set to eliminate duplicates
+  const uniqueWords = new Set(words);
 
-  return { count, found };
+  // Find intersection between uniqueWords and wordSet
+  const intersection = new Set([...uniqueWords].filter(word => wordSet.has(word)));
+
+  return {
+    count: intersection.size,
+    found: intersection
+  };
 }
 
-/**
- * Main text sentiment analysis
- */
+// Main text sentiment analysis
+
 function analyzeText(text) {
   const normalizedText = text.toLowerCase();
   const words = normalizedText.split(/\W+/);
@@ -64,35 +61,25 @@ function analyzeText(text) {
   };
 }
 
-/**
- * Checks if a journal entry is distressing
- */
+// Checks if a journal entry is distressing
 function isDistressed(text) {
   const { score, keywords } = analyzeText(text);
-  const distressKeywords = [
-    'sad', 'angry', 'depressed', 'hopeless', 'miserable',
-    'stressed', 'unhappy', 'anxious', 'frustrated'
-  ];
+  const distressKeywordsArray = Array.from(DISTRESS_WORDS);
 
   return (
     score < -0.5 ||
-    distressKeywords.some(word => keywords.includes(word))
+    distressKeywordsArray.some(word => keywords.includes(word))
   );
 }
 
-/**
- * Checks if a journal entry is highly positive
- */
+// Checks if a journal entry is highly positive
 function isPositive(text) {
   const { score, keywords } = analyzeText(text);
-  const upliftKeywords = [
-    'grateful', 'thankful', 'joy', 'hopeful',
-    'optimistic', 'proud', 'confident', 'happy'
-  ];
+  const upliftKeywordsArray = Array.from(UPLIFT_WORDS);
 
   return (
     score > 0.5 &&
-    upliftKeywords.some(word => keywords.includes(word))
+    upliftKeywordsArray.some(word => keywords.includes(word))
   );
 }
 

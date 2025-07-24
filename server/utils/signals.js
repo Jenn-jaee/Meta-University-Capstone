@@ -1,4 +1,3 @@
-// server/utils/signals.js
 const {
   getUserMoodLogs,
   getUserJournalEntries,
@@ -113,7 +112,6 @@ async function detectJournalGap(userId, prisma) {
   return null;
 }
 
-// NEW SIGNAL: Mood Swing Spike (positive swing)
 async function detectMoodSwing(userId, prisma) {
   const moods = await getUserMoodLogs(userId, prisma, 2);
   if (moods.length < 2) return null;
@@ -142,7 +140,6 @@ async function detectMoodSwing(userId, prisma) {
   return null;
 }
 
-// NEW SIGNAL: Mood Swing Frequency
 async function detectMoodVolatilitySignal(userId, prisma) {
   const moods = await getUserMoodLogs(userId, prisma, 5);
   if (moods.length < 4) return null;
@@ -215,7 +212,6 @@ async function detectUpliftSignal(userId, prisma) {
   return null;
 }
 
-// NEW SIGNAL: Engagement Drop
 async function detectEngagementDrop(userId, prisma) {
   const thisWeek = await getWeeklyMoodLogCount(userId, prisma, 0);
   const lastWeek = await getPreviousWeeklyMoodCount(userId, prisma, 1);
@@ -282,7 +278,6 @@ async function detectStreakMilestone(userId, prisma) {
   }
 }
 
-// NEW SIGNAL: Word Usage Insights
 // Analyzes user's most frequently used words to provide personalized insights
 async function detectWordUsageInsights(userId) {
   try {

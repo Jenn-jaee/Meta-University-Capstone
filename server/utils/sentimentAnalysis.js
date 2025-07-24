@@ -11,10 +11,6 @@ const positiveWords = Array.from(POSITIVE_WORDS);
 const negativeWords = Array.from(NEGATIVE_WORDS);
 const intensityWords = Array.from(INTENSITY_WORDS);
 
-/**
- * Utility to count matches of word list in a given array of words
- * Optimized version using Set for O(1) lookups
- */
 function countWordMatches(words, wordList) {
   // Convert wordList to a Set for O(1) lookups if it's not already a Set
   const wordSet = wordList instanceof Set ? wordList : new Set(wordList);

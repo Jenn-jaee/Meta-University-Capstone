@@ -1,8 +1,3 @@
-/**
- * Word frequency tracking utilities
- * Implements a more efficient algorithm for tracking and analyzing word usage in journal entries
- */
-
 const { PrismaClient } = require('@prisma/client');
 const {
   POSITIVE_WORDS,
@@ -12,11 +7,6 @@ const {
 
 const prisma = new PrismaClient();
 
-/**
- * Extract words from text using a more efficient algorithm
- * @param {string} text - The text to extract words from
- * @returns {Map} - Map of words and their counts
- */
 function extractWords(text) {
   if (!text) return new Map();
 
@@ -38,23 +28,13 @@ function extractWords(text) {
   return wordCounts;
 }
 
-/**
- * Assign sentiment score to a word
- * @param {string} word - The word to score
- * @returns {number} - Sentiment score between -1.0 and 1.0
- */
+
 function getSentimentScore(word) {
   if (POSITIVE_WORDS.has(word)) return 0.8;
   if (NEGATIVE_WORDS.has(word)) return -0.8;
   return 0; // Neutral
 }
 
-/**
- * Update word frequencies for a user based on journal entry
- * @param {string} userId - User ID
- * @param {string} text - Journal entry text
- * @returns {Promise<Object>} - Summary of words updated
- */
 async function updateWordFrequencies(userId, text) {
   const wordCounts = extractWords(text);
   if (wordCounts.size === 0) return { updated: 0, added: 0 };
@@ -98,12 +78,7 @@ async function updateWordFrequencies(userId, text) {
   return { updated, added, total: wordCounts.size };
 }
 
-/**
- * Get top N most frequent words for a user
- * @param {string} userId - User ID
- * @param {number} limit - Maximum number of words to return
- * @returns {Promise<Array>} - Array of word objects with frequency and sentiment
- */
+
 async function getTopWords(userId, limit = 10) {
   return prisma.userWordFrequency.findMany({
     where: { userId },
@@ -118,11 +93,6 @@ async function getTopWords(userId, limit = 10) {
   });
 }
 
-/**
- * Get sentiment analysis based on user's word frequencies
- * @param {string} userId - User ID
- * @returns {Promise<Object>} - Sentiment analysis results
- */
 async function getUserSentimentProfile(userId) {
   // Get all words with sentiment scores
   const words = await prisma.userWordFrequency.findMany({

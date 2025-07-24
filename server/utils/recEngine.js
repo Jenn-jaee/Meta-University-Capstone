@@ -68,11 +68,7 @@ async function getDismissalMap(userId) {
   return map;
 }
 
-/**
- * Get ranked banners for a user with improved dismissal handling and diversity
- * @param {string} userId - User ID
- * @returns {Array} - Sorted array of banner recommendations
- */
+
 async function getRankedBanners(userId) {
   // Get all potential signals for this user
   const rawSignals = await evaluateUserSignals(userId);

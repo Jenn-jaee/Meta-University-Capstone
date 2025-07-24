@@ -10,7 +10,6 @@ const router = express.Router();
 router.use(checkAuth);
 
 // GET /api/recommendation
-// Returns the highest-ranked personalized banner or null
 router.get('/', async (req, res) => {
   try {
     // Get all ranked banners for this user
@@ -38,7 +37,6 @@ router.get('/', async (req, res) => {
         },
       });
 
-      // For debugging, include all available banners and their scores
       if (process.env.NODE_ENV === 'development') {
         return res.json({
           banner: topBanner,
@@ -60,7 +58,6 @@ router.get('/', async (req, res) => {
 });
 
 // POST /api/recommendation/dismiss
-// Records when a user dismisses a banner
 router.post('/dismiss', async (req, res) => {
   try {
     const { tag } = req.body;

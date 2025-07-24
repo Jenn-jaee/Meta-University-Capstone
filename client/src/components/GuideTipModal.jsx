@@ -1,4 +1,3 @@
-import React from 'react';
 import './GuideTipModal.css';
 
 function GuideTipModal({ type, onClose }) {

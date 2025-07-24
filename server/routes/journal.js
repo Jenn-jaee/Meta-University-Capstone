@@ -3,6 +3,7 @@ const { PrismaClient } = require('@prisma/client');
 const checkAuth = require('../middleware/checkAuth');
 const { STATUS } = require('../constants');
 const { invalidateFeed } = require('../utils/invalidateFeed');
+const { updateWordFrequencies } = require('../utils/wordFrequencyTracker');
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -41,6 +42,10 @@ router.post('/', (req, res) => {
     },
   })
   .then(entry => {
+    // Track word frequencies for sentiment analysis
+    updateWordFrequencies(userId, content)
+      .catch(err => console.error('Error updating word frequencies:', err));
+
     // Get user's connections to invalidate their feed caches
     return prisma.$queryRaw`
       SELECT "userBId" AS id
@@ -99,6 +104,12 @@ router.put('/:id', (req, res) => {
     },
   })
   .then(updatedEntry => {
+    // Track word frequencies for sentiment analysis if content was updated
+    if (content) {
+      updateWordFrequencies(userId, content)
+        .catch(err => console.error('Error updating word frequencies:', err));
+    }
+
     // Get user's connections to invalidate their feed caches
     return prisma.$queryRaw`
       SELECT "userBId" AS id

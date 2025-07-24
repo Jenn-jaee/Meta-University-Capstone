@@ -30,6 +30,7 @@ model User {
   darkMode       Boolean  @default(false)
   dailyReminders Boolean  @default(false)
   privateJournal Boolean  @default(false)
+  currentStreak  Int      @default(0)
 
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
@@ -41,6 +42,7 @@ model User {
   habitLogs      HabitLog[]
   moodLogs       MoodLog[]
   bannerHistory UserBannerHistory[] @relation("UserToBannerHistory")
+  wordFrequencies UserWordFrequency[]
 
 
 
@@ -186,4 +188,22 @@ model UserBannerHistory {
   updatedAt    DateTime @updatedAt
 
   @@unique([userId, bannerTag])
+}
+
+// Tracks word frequency in user journal entries for sentiment analysis
+model UserWordFrequency {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+
+  word         String
+  frequency    Int      @default(1)
+  lastUsed     DateTime @default(now())
+  sentiment    Float?   // Optional sentiment score (-1.0 to 1.0)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([userId, word])
+  @@index([userId, frequency(sort: Desc)])
 }

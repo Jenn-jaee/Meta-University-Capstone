@@ -1,8 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../api/axiosInstance.js';
 import { BASE_URL } from '../api/axiosInstance.js';
-import { useEffect } from 'react';
 import { setDarkMode } from '../utils/ThemeManager.js';
 import './SignIn.css';
 
@@ -12,6 +11,8 @@ function SignIn() {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,6 +22,7 @@ function SignIn() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
     try {
       const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
@@ -34,11 +36,44 @@ function SignIn() {
       navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.error || 'Something went wrong');
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const handleGoogleLogin = () => {
+    setIsGoogleLoading(true);
   };
 
   return (
     <div className="signin-container">
+      {(isLoading || isGoogleLoading) && (
+        <div className="fancy-loading-overlay">
+          <div className="fancy-loading-content">
+            <div className="bloom-loader">
+              <div className="bloom-petals">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <div className="bloom-center"></div>
+            </div>
+
+            <h3 className="loading-title">Welcome to Bloom</h3>
+            <p className="loading-message">Preparing your wellness journey...</p>
+
+            <div className="loading-progress">
+              <div className="loading-progress-bar">
+                <div className="loading-progress-fill"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="signin-box">
         <h1 className="signin-title">
           {isLogin ? 'Welcome Back' : 'Create Account'}
@@ -87,7 +122,11 @@ function SignIn() {
 
         <div className="divider">OR</div>
 
-        <a href={`${BASE_URL}/api/auth/google`} className="google-link">
+        <a
+          href={`${BASE_URL}/api/auth/google`}
+          className="google-link"
+          onClick={handleGoogleLogin}
+        >
             <button className="google-btn">
                 <span className="google-icon">🔍</span>
                 Continue with Google

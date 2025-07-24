@@ -10,6 +10,7 @@ const {
   detectEngagementDrop,
   detectLateNightEntry,
   detectStreakMilestone,
+  detectWordUsageInsights,
 } = require('./signals');
 
 const {
@@ -32,6 +33,7 @@ async function evaluateUserSignals(userId) {
     detectEngagementDrop(userId, prisma),
     detectLateNightEntry(userId, prisma),
     detectStreakMilestone(userId, prisma),
+    detectWordUsageInsights(userId),
   ]);
 
   // Filter out nulls and sort by weight descending (priority)
@@ -45,19 +47,19 @@ async function getDismissalMap(userId) {
   const recentDismissals = await prisma.userBannerHistory.findMany({
     where: {
       userId,
-      action: 'dismissed',
+      dismissedAt: { not: null },
     },
-    orderBy: { timestamp: 'desc' },
+    orderBy: { dismissedAt: 'desc' },
   });
 
   const map = {};
 
   for (const entry of recentDismissals) {
     const daysAgo = Math.floor(
-      (Date.now() - new Date(entry.timestamp)) / (1000 * 60 * 60 * 24)
+      (Date.now() - new Date(entry.dismissedAt)) / (1000 * 60 * 60 * 24)
     );
 
-    const tag = entry.bannerId; // bannerId should match signal.tag
+    const tag = entry.bannerTag;
     if (!map[tag] || daysAgo < map[tag]) {
       map[tag] = daysAgo;
     }
@@ -66,14 +68,25 @@ async function getDismissalMap(userId) {
   return map;
 }
 
+/**
+ * Get ranked banners for a user with improved dismissal handling and diversity
+ * @param {string} userId - User ID
+ * @returns {Array} - Sorted array of banner recommendations
+ */
 async function getRankedBanners(userId) {
+  // Get all potential signals for this user
   const rawSignals = await evaluateUserSignals(userId);
 
-  // Fetch seen/dismissed state for all banner tags
+  // If no signals detected, return empty array
+  if (!rawSignals.length) return [];
+
+  // Fetch banner history for this user
   const bannerHistory = await prisma.userBannerHistory.findMany({
     where: { userId },
+    orderBy: { updatedAt: 'desc' },
   });
 
+  // Create a map of banner history for quick lookup
   const historyMap = {};
   for (const entry of bannerHistory) {
     historyMap[entry.bannerTag] = {
@@ -81,16 +94,29 @@ async function getRankedBanners(userId) {
         ? Math.floor((Date.now() - new Date(entry.dismissedAt)) / (1000 * 60 * 60 * 24))
         : null,
       seenRecently: entry.seenAt
-        ? (Date.now() - new Date(entry.seenAt)) / (1000 * 60 * 60) < 12  // seen in last 12 hours
+        ? (Date.now() - new Date(entry.seenAt)) / (1000 * 60 * 60) < 6  // seen in last 6 hours
         : false,
+      lastSeen: entry.seenAt,
     };
   }
 
+  // Get the most recently shown banner type to avoid showing the same type repeatedly
+  let lastShownType = null;
+  if (bannerHistory.length > 0) {
+    const lastBanner = bannerHistory[0];
+    if (lastBanner.bannerTag) {
+      lastShownType = lastBanner.bannerTag.split('_')[0];
+    }
+  }
+
+  // Score each signal
   const scored = rawSignals.map(signal => {
     const history = historyMap[signal.tag] || {};
     const daysSinceDismiss = history.daysSinceDismiss ?? null;
     const seenRecently = history.seenRecently ?? false;
+    const signalType = signal.tag.split('_')[0] || 'general';
 
+    // Calculate base score using the normalized scoring system
     let score = calculateBannerScore({
       baseWeight: signal.weight,
       journalWordCount: signal.journalWordCount || 0,
@@ -98,19 +124,36 @@ async function getRankedBanners(userId) {
       daysSinceDismiss,
     });
 
-    // Optional: penalize banners recently seen but not dismissed
+    // Apply penalties for recently seen banners
     if (seenRecently) {
-      score *= 0.8; // 20% penalty
+      score *= 0.5; // 50% penalty for recently seen banners
     }
+
+    // Promote diversity by penalizing the same type of banner shown last
+    if (signalType === lastShownType && !seenRecently) {
+      score *= 0.8; // 20% penalty for showing the same type of banner
+    }
+
+    // Ensure score is between 0 and 1
+    score = Math.max(0, Math.min(score, 1.0));
 
     return {
       tag: signal.tag || 'unknown',
       message: signal.message || '',
       score: parseFloat(score.toFixed(2)),
+      // Include additional metadata for debugging
+      weight: signal.weight,
+      type: signalType,
+      daysSinceDismiss,
+      seenRecently,
     };
   });
 
-  return scored.sort((a, b) => b.score - a.score);
+  // Filter out any banners with zero score (completely suppressed)
+  const validBanners = scored.filter(banner => banner.score > 0);
+
+  // Sort by score descending
+  return validBanners.sort((a, b) => b.score - a.score);
 }
 
 

@@ -1,20 +1,32 @@
 
 // Gets a user's mood logs, sorted by most recent
-async function getUserMoodLogs(userId, prisma, limit = 10) {
-  return prisma.moodLog.findMany({
+async function getUserMoodLogs(userId, prisma, limit = null) {
+  const query = {
     where: { userId },
     orderBy: { createdAt: 'desc' },
-    take: limit,
-  });
+  };
+
+  // Only apply limit if specified
+  if (limit !== null) {
+    query.take = limit;
+  }
+
+  return prisma.moodLog.findMany(query);
 }
 
 // Gets a user's journal entries, sorted by most recent
-async function getUserJournalEntries(userId, prisma, limit = 10) {
-  return prisma.journalEntry.findMany({
+async function getUserJournalEntries(userId, prisma, limit = null) {
+  const query = {
     where: { userId },
     orderBy: { createdAt: 'desc' },
-    take: limit,
-  });
+  };
+
+  // Only apply limit if specified
+  if (limit !== null) {
+    query.take = limit;
+  }
+
+  return prisma.journalEntry.findMany(query);
 }
 
 // Simple 2-day streak reset detector (based on mood logs)

@@ -69,6 +69,11 @@
     background-color: #5a67d8;
   }
 
+  .submit-btn:disabled {
+    background-color: #a0aec0;
+    cursor: not-allowed;
+  }
+
   .divider {
     text-align: center;
     margin: 1.5rem 0;
@@ -121,6 +126,13 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
+  .google-btn:disabled {
+    background-color: #f5f5f5;
+    color: #a0aec0;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
   .google-icon {
     font-size: 1.2rem;
   }
@@ -142,4 +154,178 @@
 
   .toggle-btn:hover {
     color: #5a67d8;
+  }
+
+  /* Fancy Loading Overlay Styles */
+  .fancy-loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(148, 87, 235, 0.9) 0%, rgba(255, 122, 184, 0.9) 100%);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+
+  .fancy-loading-content {
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 3rem;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 350px;
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  /* Bloom Flower Loader */
+  .bloom-loader {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 2rem;
+  }
+
+  .bloom-petals {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    animation: rotate 6s linear infinite;
+  }
+
+  .bloom-petals span {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #ff7ab8 0%, #a367dc 100%);
+    border-radius: 50% 50% 0 50%;
+    transform-origin: 100% 100%;
+    animation: bloom 3s ease-in-out infinite alternate;
+  }
+
+  .bloom-petals span:nth-child(1) {
+    top: 10px;
+    left: 35px;
+    transform: rotate(0deg);
+    animation-delay: 0s;
+  }
+
+  .bloom-petals span:nth-child(2) {
+    top: 35px;
+    left: 60px;
+    transform: rotate(60deg);
+    animation-delay: 0.2s;
+  }
+
+  .bloom-petals span:nth-child(3) {
+    top: 60px;
+    left: 60px;
+    transform: rotate(120deg);
+    animation-delay: 0.4s;
+  }
+
+  .bloom-petals span:nth-child(4) {
+    top: 60px;
+    left: 35px;
+    transform: rotate(180deg);
+    animation-delay: 0.6s;
+  }
+
+  .bloom-petals span:nth-child(5) {
+    top: 35px;
+    left: 10px;
+    transform: rotate(240deg);
+    animation-delay: 0.8s;
+  }
+
+  .bloom-petals span:nth-child(6) {
+    top: 10px;
+    left: 10px;
+    transform: rotate(300deg);
+    animation-delay: 1s;
+  }
+
+  .bloom-center {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #ffcc70 0%, #ff9eb1 100%);
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 15px rgba(255, 158, 177, 0.5);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  /* Loading Text Styles */
+  .loading-title {
+    margin: 0 0 0.5rem;
+    font-size: 1.8rem;
+    background: linear-gradient(135deg, #9457eb 0%, #ff7ab8 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent; /* Fallback */
+    font-weight: 700;
+  }
+
+  .loading-message {
+    margin: 0.5rem 0 1.5rem;
+    font-size: 1.1rem;
+    color: #666;
+    font-weight: 500;
+  }
+
+  /* Progress Bar */
+  .loading-progress {
+    width: 100%;
+    margin-top: 1.5rem;
+  }
+
+  .loading-progress-bar {
+    height: 6px;
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .loading-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #9457eb 0%, #ff7ab8 100%);
+    border-radius: 3px;
+    width: 0;
+    animation: progressFill 2s ease-in-out infinite;
+  }
+
+  /* Animations */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @keyframes bloom {
+    0% { transform-origin: 100% 100%; transform: scale(0.8) rotate(0deg); }
+    50% { transform-origin: 100% 100%; transform: scale(1) rotate(10deg); }
+    100% { transform-origin: 100% 100%; transform: scale(0.9) rotate(0deg); }
+  }
+
+  @keyframes pulse {
+    0% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -50%) scale(1.1); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+  }
+
+  @keyframes progressFill {
+    0% { width: 0; }
+    50% { width: 100%; }
+    100% { width: 0; }
   }

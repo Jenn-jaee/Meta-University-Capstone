@@ -38,6 +38,7 @@ const feedRoutes = require('./routes/feed');
 const shareSettingsRoutes = require('./routes/shareSettings');
 const connectionRequestRoutes = require('./routes/connectionRequests');
 const connectionRoutes = require('./routes/connections');
+const wordAnalyticsRoutes = require('./routes/wordAnalytics');
 
 
 
@@ -48,11 +49,12 @@ app.use('/api/habit-logs', habitLogsRouter);
 app.use('/api/user', userRouter);
 app.use('/api/mood-logs', moodLogsRoute);
 app.use('/api/plant-growth', plantGrowthRoutes);
-app.use('/api', recoRoute);
+app.use('/api/recommendation', recoRoute);
 app.use('/api/feed', feedRoutes);
 app.use('/api/share-settings', shareSettingsRoutes);
 app.use('/api/connection-requests', connectionRequestRoutes);
 app.use('/api/connections', connectionRoutes);
+app.use('/api/word-analytics', wordAnalyticsRoutes);
 
 
 //Test route

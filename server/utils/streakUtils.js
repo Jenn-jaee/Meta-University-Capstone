@@ -70,7 +70,7 @@ async function updateUserStreak(userId, prisma) {
 
     return streak;
   } catch (error) {
-    console.error('Error updating user streak:', error);
+    // Silent error handling for streak updates
     return 0;
   }
 }

@@ -61,8 +61,7 @@ function MoodPage() {
 
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching mood logs:', err);
-        // Use fallback data if API call fails
+        // Error silently handled - use fallback data if API call fails
         setAllMoodLogs(fallbackData);
         setStreak(calculateMoodStreak(fallbackData));
         initializeDateRange(fallbackData, timeFilter);

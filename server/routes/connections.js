@@ -59,10 +59,10 @@ router.get('/suggested', async (req, res) => {
     ];
 
     // Toggle between recommendation algorithms using query parameter
-    // Use /api/connections/suggested?algorithm=advanced to get advanced recommendations
-    // Use /api/connections/suggested or /api/connections/suggested?algorithm=simple for simple recommendations
-    const algorithm = req.query.algorithm || 'simple';
-    const useAdvancedRecommendations = algorithm === 'advanced';
+    // Use /api/connections/suggested?algorithm=simple to get simple recommendations
+    // Use /api/connections/suggested or /api/connections/suggested?algorithm=advanced for advanced recommendations
+    const algorithm = req.query.algorithm || 'advanced';
+    const useAdvancedRecommendations = algorithm !== 'simple';
 
     if (useAdvancedRecommendations) {
       // Advanced algorithm with multiple factors and match reasons

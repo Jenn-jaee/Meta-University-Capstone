@@ -7,7 +7,7 @@ import WeeklyMoodSummary from '../components/WeeklyMoodSummary';
 import MoodHistory from '../components/MoodHistory';
 import './MoodPage.css';
 
-// Fallback data in case API call fails
+// Fallback data in case API call fails - using mood logs format
 const fallbackData = [
   { id: 1, mood: 3, createdAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000), note: 'Feeling okay' },
   { id: 2, mood: 4, createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), note: 'Pretty good day' },
@@ -35,6 +35,7 @@ function MoodPage() {
     const fetchMoodLogs = async () => {
       try {
         setLoading(true);
+        // Explicitly fetch from mood logs endpoint to ensure we're using mood log data
         const res = await axios.get('/api/mood-logs');
         const data = res.data;
 

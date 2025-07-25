@@ -62,13 +62,12 @@ const SimpleMoodChart = ({ moodData }) => {
   return (
     <div className="enhanced-mood-chart">
       <div className="simple-chart-container">
-        <div className="y-axis-labels">
-          <div className="y-label">😄 Excited</div>
-          <div className="y-label">😁 Happy</div>
+      <div className="y-axis-labels">
+          <div className="y-label">🤩 Excited</div>
+          <div className="y-label">😊 Happy</div>
           <div className="y-label">😐 Neutral</div>
-          <div className="y-label">😰 Anxious</div>
+          <div className="y-label">🙂 Content</div>
           <div className="y-label">😢 Sad</div>
-          <div className="y-label">😠 Angry</div>
         </div>
 
         <div className="chart-area">
@@ -122,12 +121,11 @@ const SimpleMoodChart = ({ moodData }) => {
       </div>
 
       <div className="mood-legend">
-        <div className="legend-item"><span className="legend-emoji">😠</span> Angry</div>
         <div className="legend-item"><span className="legend-emoji">😢</span> Sad</div>
-        <div className="legend-item"><span className="legend-emoji">😰</span> Anxious</div>
+        <div className="legend-item"><span className="legend-emoji">🙂</span> Content</div>
         <div className="legend-item"><span className="legend-emoji">😐</span> Neutral</div>
-        <div className="legend-item"><span className="legend-emoji">😁</span> Happy</div>
-        <div className="legend-item"><span className="legend-emoji">😄</span> Excited</div>
+        <div className="legend-item"><span className="legend-emoji">😊</span> Happy</div>
+        <div className="legend-item"><span className="legend-emoji">🤩</span> Excited</div>
       </div>
     </div>
   );

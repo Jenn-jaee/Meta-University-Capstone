@@ -41,7 +41,9 @@
   }
 
   .nav-button.active {
-    background-color: #34495e;
+    background-color: #9b7ede; /* Lavender color that stands out */
+    font-weight: 500; /* Make text slightly bolder */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Add subtle shadow for depth */
   }
 
   .logout-button {

@@ -1,0 +1,201 @@
+.mood-history {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 24px;
+}
+
+.mood-history h3 {
+  font-size: 1.4rem;
+  margin-bottom: 16px;
+  color: #333;
+  text-align: center;
+}
+
+.mood-history.empty-state {
+  text-align: center;
+  padding: 30px 20px;
+  color: #888;
+}
+
+.mood-history.empty-state p:first-child {
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.week-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.nav-button {
+  background-color: transparent;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #333;
+}
+
+.nav-button:hover:not(:disabled) {
+  background-color: #f8f8f8;
+  border-color: #ccc;
+}
+
+.nav-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.week-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  color: #555;
+}
+
+.calendar-icon {
+  color: #0066cc;
+}
+
+.week-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f8f9fa;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.week-average {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.average-label {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.average-value {
+  font-size: 1.2rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.entry-count {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.mood-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.mood-entry {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+  border-left: 4px solid #4caf50;
+  transition: transform 0.2s;
+}
+
+.mood-entry:hover {
+  transform: translateX(4px);
+}
+
+.entry-date {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.entry-mood {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.mood-emoji {
+  font-size: 1.5rem;
+}
+
+.entry-note {
+  font-size: 0.95rem;
+  color: #444;
+  font-style: italic;
+  padding-left: 8px;
+  border-left: 2px solid #ddd;
+}
+
+.week-pagination {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.pagination-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #ddd;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.pagination-dot.active {
+  background-color: #0066cc;
+  transform: scale(1.2);
+}
+
+.pagination-dot:hover:not(.active) {
+  background-color: #bbb;
+}
+
+/* Animation for entries */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.mood-entry {
+  animation: slideIn 0.3s ease-out forwards;
+}
+
+.mood-entry:nth-child(1) { animation-delay: 0.05s; }
+.mood-entry:nth-child(2) { animation-delay: 0.1s; }
+.mood-entry:nth-child(3) { animation-delay: 0.15s; }
+.mood-entry:nth-child(4) { animation-delay: 0.2s; }
+.mood-entry:nth-child(5) { animation-delay: 0.25s; }
+.mood-entry:nth-child(6) { animation-delay: 0.3s; }
+.mood-entry:nth-child(7) { animation-delay: 0.35s; }

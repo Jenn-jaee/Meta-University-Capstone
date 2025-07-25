@@ -5,6 +5,7 @@ const checkAuth = require('../middleware/checkAuth');
 const { STATUS } = require('../constants');
 const { formatUserPreview } = require('../utils/connectionHelpers');
 const { invalidateFeed } = require('../utils/invalidateFeed');
+const userRecommendationEngine = require('../utils/userRecommendationEngine');
 
 const prisma = new PrismaClient();
 
@@ -52,24 +53,41 @@ router.get('/suggested', async (req, res) => {
 
     // Combine all IDs to exclude from suggestions
     const excludeUserIds = [
-      userId, // Exclude self
       ...connectedUserIds,
       ...sentRequestUserIds,
       ...receivedRequestUserIds,
     ];
 
-    // Find users that are not connected or have pending requests
-    const suggestedUsers = await prisma.user.findMany({
-      where: {
-        id: { notIn: excludeUserIds },
-      },
-      take: 10, // Limit to 10 suggestions
-    });
+    // Toggle between recommendation algorithms using query parameter
+    // Use /api/connections/suggested?algorithm=advanced to get advanced recommendations
+    // Use /api/connections/suggested or /api/connections/suggested?algorithm=simple for simple recommendations
+    const algorithm = req.query.algorithm || 'simple';
+    const useAdvancedRecommendations = algorithm === 'advanced';
 
-    // Format user data before sending to frontend
-    const formattedUsers = suggestedUsers.map(user => formatUserPreview(user));
+    if (useAdvancedRecommendations) {
+      // Advanced algorithm with multiple factors and match reasons
+      const recommendedUsers = await userRecommendationEngine.getRecommendations(userId, excludeUserIds, 10);
 
-    res.json(formattedUsers);
+      // Add a subtle marker to identify which algorithm was used (won't affect UI)
+      const markedRecommendations = recommendedUsers.map(user => ({
+        ...user,
+        fromAdvanced: true
+      }));
+
+      return res.json(markedRecommendations);
+    } else {
+      // Simple algorithm that just excludes existing connections
+      const suggestedUsers = await prisma.user.findMany({
+        where: {
+          id: { notIn: [...excludeUserIds, userId] },
+        },
+        take: 10, // Limit to 10 suggestions
+      });
+
+      // Format user data before sending to frontend
+      const formattedUsers = suggestedUsers.map(user => formatUserPreview(user));
+      return res.json(formattedUsers);
+    }
   } catch (error) {
     res.status(STATUS.SERVER_ERROR).json({ error: 'Failed to fetch suggested users.' });
   }

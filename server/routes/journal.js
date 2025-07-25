@@ -10,21 +10,63 @@ const prisma = new PrismaClient();
 
 router.use(checkAuth);
 
-// GET /api/journal - Get all journal entries for user (optionally filter by date)
+// GET /api/journal - Get all journal entries for user with filtering options
 router.get('/', async (req, res) => {
-  const { from } = req.query;
+  const { from, to, search, title, mood } = req.query;
   const where = { userId: req.userId };
 
-  if (from) where.createdAt = { gte: new Date(from) };
+  // Date range filters
+  if (from || to) {
+    where.createdAt = {};
+    if (from) {
+      const startDate = new Date(from);
+      startDate.setHours(0, 0, 0, 0); // Start of day
+      where.createdAt.gte = startDate;
+      console.log(`Date filter from: ${startDate.toISOString()}`);
+    }
+
+    if (to) {
+      // Create a date for the end of the selected day (23:59:59.999)
+      // First, ensure we're working with the correct date by parsing it properly
+      const [year, month, day] = to.split('-').map(num => parseInt(num, 10));
+      // Note: month is 0-indexed in JavaScript Date
+      const endDate = new Date(year, month - 1, day, 23, 59, 59, 999);
+
+      where.createdAt.lte = endDate;
+      console.log(`Date filter to: ${endDate.toISOString()}, Original input: ${to}`);
+    }
+  }
+
+  // Content search (case insensitive)
+  if (search) {
+    where.content = {
+      contains: search,
+      mode: 'insensitive'
+    };
+  }
+
+  // Title search (case insensitive)
+  if (title) {
+    where.title = {
+      contains: title,
+      mode: 'insensitive'
+    };
+  }
+
+  // Mood filter
+  if (mood !== undefined && mood !== null) {
+    where.journalMood = parseInt(mood);
+  }
 
   prisma.journalEntry.findMany({
     where,
     orderBy: { createdAt: 'desc' },
   })
   .then((entries) => res.json(entries))
-  .catch(() =>
-    res.status(STATUS.SERVER_ERROR).json({ message: 'Error fetching entries' })
-  );
+  .catch((error) => {
+    console.error('Error fetching entries:', error);
+    res.status(STATUS.SERVER_ERROR).json({ message: 'Error fetching entries' });
+  });
 });
 
 

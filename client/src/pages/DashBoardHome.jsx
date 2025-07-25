@@ -307,7 +307,9 @@ function DashBoardHome() {
             setShowBanner(false);
             // Add API call to record dismissal
             axios.post('/api/recommendation/dismiss', { tag: banner.tag })
-              .catch(err => console.error('Failed to record banner dismissal', err));
+              .catch(() => {
+                // Silently handle error - banner dismissal is non-critical
+              });
           }}
           onAction={() => {
             // Show guide tip modal instead of navigating directly
@@ -356,7 +358,9 @@ function DashBoardHome() {
             // Dismiss the banner after viewing the guide
             setShowBanner(false);
             axios.post('/api/recommendation/dismiss', { tag })
-              .catch(err => console.error('Failed to record banner dismissal', err));
+              .catch(() => {
+                // Silently handle error - banner dismissal is non-critical
+              });
           }}
         />
       )}

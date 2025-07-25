@@ -22,7 +22,6 @@ router.get('/', async (req, res) => {
       const startDate = new Date(from);
       startDate.setHours(0, 0, 0, 0); // Start of day
       where.createdAt.gte = startDate;
-      console.log(`Date filter from: ${startDate.toISOString()}`);
     }
 
     if (to) {
@@ -33,7 +32,6 @@ router.get('/', async (req, res) => {
       const endDate = new Date(year, month - 1, day, 23, 59, 59, 999);
 
       where.createdAt.lte = endDate;
-      console.log(`Date filter to: ${endDate.toISOString()}, Original input: ${to}`);
     }
   }
 
@@ -63,8 +61,7 @@ router.get('/', async (req, res) => {
     orderBy: { createdAt: 'desc' },
   })
   .then((entries) => res.json(entries))
-  .catch((error) => {
-    console.error('Error fetching entries:', error);
+  .catch(() => {
     res.status(STATUS.SERVER_ERROR).json({ message: 'Error fetching entries' });
   });
 });
@@ -86,7 +83,7 @@ router.post('/', (req, res) => {
   .then(entry => {
     // Track word frequencies for sentiment analysis
     updateWordFrequencies(userId, content)
-      .catch(err => console.error('Error updating word frequencies:', err));
+      .catch(() => {/* Silently handle word frequency errors */});
 
     // Get user's connections to invalidate their feed caches
     return prisma.$queryRaw`
@@ -149,7 +146,7 @@ router.put('/:id', (req, res) => {
     // Track word frequencies for sentiment analysis if content was updated
     if (content) {
       updateWordFrequencies(userId, content)
-        .catch(err => console.error('Error updating word frequencies:', err));
+        .catch(() => {/* Silently handle word frequency errors */});
     }
 
     // Get user's connections to invalidate their feed caches

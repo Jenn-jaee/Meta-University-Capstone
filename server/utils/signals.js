@@ -321,7 +321,7 @@ async function detectWordUsageInsights(userId) {
       weight,
     };
   } catch (err) {
-    console.error('Error detecting word usage insights:', err);
+    // Silent error handling for word usage insights
     return null;
   }
 }

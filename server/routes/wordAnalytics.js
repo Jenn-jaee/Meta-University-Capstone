@@ -22,7 +22,6 @@ router.get('/top-words', async (req, res) => {
 
     return res.json({ topWords });
   } catch (error) {
-    console.error('Error fetching top words:', error);
     return res.status(STATUS.SERVER_ERROR).json({
       error: 'Failed to fetch word analytics'
     });
@@ -41,7 +40,6 @@ router.get('/sentiment-profile', async (req, res) => {
 
     return res.json(profile);
   } catch (error) {
-    console.error('Error fetching sentiment profile:', error);
     return res.status(STATUS.SERVER_ERROR).json({
       error: 'Failed to fetch sentiment profile'
     });
@@ -77,7 +75,6 @@ router.get('/word-cloud', async (req, res) => {
 
     return res.json({ wordCloudData });
   } catch (error) {
-    console.error('Error fetching word cloud data:', error);
     return res.status(STATUS.SERVER_ERROR).json({
       error: 'Failed to fetch word cloud data'
     });

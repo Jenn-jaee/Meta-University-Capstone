@@ -4,6 +4,7 @@ const { PrismaClient } = require('@prisma/client');
 const checkAuth = require('../middleware/checkAuth');
 const { STATUS } = require('../constants');
 const { invalidateFeed } = require('../utils/invalidateFeed');
+const { updateUserStreak } = require('../utils/streakUtils');
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -63,22 +64,28 @@ router.post('/', (req, res) => {
         // Invalidate feed caches
         invalidateFeed(userId, connectionIds);
 
-        // Emit WebSocket event to notify connections about the new mood log
-        if (req.app.locals.io) {
-          // Emit to the user who created the mood log
-          req.app.locals.io.emit(`feed:update:${userId}`, { type: 'new-mood' });
+        // Update user's streak
+        return updateUserStreak(userId, prisma).then(streak => {
+          // Emit WebSocket event to notify connections about the new mood log
+          if (req.app.locals.io) {
+            // Emit to the user who created the mood log
+            req.app.locals.io.emit(`feed:update:${userId}`, { type: 'new-mood' });
 
-          // Emit to all connections
-          connectionIds.forEach(connectionId => {
-            req.app.locals.io.emit(`feed:update:${connectionId}`, {
-              type: 'new-mood',
-              userId: userId
+            // Emit to all connections
+            connectionIds.forEach(connectionId => {
+              req.app.locals.io.emit(`feed:update:${connectionId}`, {
+                type: 'new-mood',
+                userId: userId
+              });
             });
+          }
+
+          // Return the mood log with the updated streak
+          return res.status(STATUS.SUCCESS).json({
+            ...newMoodLog,
+            currentStreak: streak
           });
-        }
-
-
-        return res.status(STATUS.SUCCESS).json(newMoodLog);
+        });
       });
     });
   })

@@ -12,7 +12,7 @@ const prisma = new PrismaClient();
 router.use(checkAuth);
 
 // POST /api/habit-logs - Create or update today's habit log
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const userId = req.userId;
   const { habitId, completed } = req.body;
 
@@ -30,13 +30,8 @@ router.post('/', (req, res) => {
           gte: today,
           lt: endOfToday,
         },
-
       },
-    },
-  })
-  .then(existingLog => {
-    let resultPromise;
-
+    });
 
     // Get the habit details
     const habit = await prisma.habit.findUnique({
@@ -168,15 +163,8 @@ router.post('/', (req, res) => {
   }
 });
 
-/**
- * GET /api/habit-logs/today - Fetch all of today's habit logs for user
- *
- * This endpoint retrieves all habit logs for the current day
- * Used to determine which habits have been completed today
- *
- * Response:
- * - Array of habit logs for the current day
- */
+// GET /api/habit-logs/today - Fetch all of today's habit logs for user
+
 router.get('/today', (req, res) => {
   const userId = req.userId;
 

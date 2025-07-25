@@ -1,5 +1,3 @@
-
-// server/utils/signals.js
 const {
   getUserMoodLogs,
   getUserJournalEntries,
@@ -14,7 +12,7 @@ const {
 } = require('./signalUtils');
 
 const { isDistressed, isPositive } = require('./sentimentAnalysis');
-
+const { getUserSentimentProfile, getTopWords } = require('./wordFrequencyTracker');
 
 // Detects a significant drop in mood compared to previous entry
 async function detectMoodDrop(userId, prisma) {
@@ -24,11 +22,21 @@ async function detectMoodDrop(userId, prisma) {
   const [latest, previous] = moods;
   const drop = previous.mood - latest.mood;
 
+  // Only detect mood drops that happened within the last 24 hours
+  const latestMoodTime = new Date(latest.createdAt).getTime();
+  const currentTime = Date.now();
+  const hoursSinceLatestMood = (currentTime - latestMoodTime) / (1000 * 60 * 60);
+
+  // If the mood drop is more than 24 hours old, don't show the banner
+  if (hoursSinceLatestMood > 24) {
+    return null;
+  }
+
   if (drop >= 2) {
     return {
       tag: 'mood_drop',
-      weight: 3,
-      message: 'Noticed a sharp mood drop recently.',
+      weight: 4,
+      message: 'Noticed a sharp mood drop recently.'
     };
   }
 
@@ -40,11 +48,21 @@ async function detectLowMood(userId, prisma) {
   const moods = await getUserMoodLogs(userId, prisma, 1);
   if (!moods.length) return null;
 
+  // Only detect low moods that happened within the last 24 hours
+  const latestMoodTime = new Date(moods[0].createdAt).getTime();
+  const currentTime = Date.now();
+  const hoursSinceLatestMood = (currentTime - latestMoodTime) / (1000 * 60 * 60);
+
+  // If the mood log is more than 24 hours old, don't show the banner
+  if (hoursSinceLatestMood > 24) {
+    return null;
+  }
+
   if (moods[0].mood <= 1) {
     return {
       tag: 'low_mood',
-      weight: 2,
-      message: 'You logged a low mood today.',
+      weight: 3,
+      message: 'You logged a low mood today.'
     };
   }
 
@@ -60,8 +78,8 @@ async function detectStreakReset(userId, prisma) {
   if (streakBroken) {
     return {
       tag: 'streak_reset',
-      weight: 2,
-      message: 'Looks like your streak was broken recently.',
+      weight: 3,
+      message: 'Looks like your streak was broken recently.'
     };
   }
 
@@ -74,8 +92,8 @@ async function detectJournalGap(userId, prisma) {
   if (!entries.length) {
     return {
       tag: 'no_journals_yet',
-      weight: 3,
-      message: 'You haven’t started journaling yet — why not try today?',
+      weight: 5,
+      message: "You haven't started journaling yet — why not try today?"
     };
   }
 
@@ -86,15 +104,14 @@ async function detectJournalGap(userId, prisma) {
   if (daysAgo >= 3) {
     return {
       tag: 'journal_gap',
-      weight: 2,
-      message: 'It’s been a few days since your last journal. Want to reflect today?',
+      weight: 3,
+      message: "It's been a few days since your last journal. Want to reflect today?"
     };
   }
 
   return null;
 }
 
-// NEW SIGNAL: Mood Swing Spike (positive swing)
 async function detectMoodSwing(userId, prisma) {
   const moods = await getUserMoodLogs(userId, prisma, 2);
   if (moods.length < 2) return null;
@@ -102,10 +119,20 @@ async function detectMoodSwing(userId, prisma) {
   const [latest, previous] = moods;
   const rise = latest.mood - previous.mood;
 
+  // Only detect mood swings that happened within the last 24 hours
+  const latestMoodTime = new Date(latest.createdAt).getTime();
+  const currentTime = Date.now();
+  const hoursSinceLatestMood = (currentTime - latestMoodTime) / (1000 * 60 * 60);
+
+  // If the mood swing is more than 24 hours old, don't show the banner
+  if (hoursSinceLatestMood > 24) {
+    return null;
+  }
+
   if (rise >= 3) {
     return {
       tag: 'mood_swing',
-      weight: 2,
+      weight: 3,
       message: 'You had a big mood change today. How are you feeling about it?'
     };
   }
@@ -113,7 +140,6 @@ async function detectMoodSwing(userId, prisma) {
   return null;
 }
 
-// NEW SIGNAL: Mood Swing Frequency
 async function detectMoodVolatilitySignal(userId, prisma) {
   const moods = await getUserMoodLogs(userId, prisma, 5);
   if (moods.length < 4) return null;
@@ -135,6 +161,16 @@ async function detectDistressSignal(userId, prisma) {
   const entry = await getLastJournalEntry(userId, prisma);
   if (!entry || !entry.content) return null;
 
+  // Only detect distress in journal entries from the last 48 hours
+  const entryTime = new Date(entry.createdAt).getTime();
+  const currentTime = Date.now();
+  const hoursSinceEntry = (currentTime - entryTime) / (1000 * 60 * 60);
+
+  // If the journal entry is more than 48 hours old, don't show the banner
+  if (hoursSinceEntry > 48) {
+    return null;
+  }
+
   const distress = isDistressed(entry.content);
 
   if (distress) {
@@ -153,6 +189,16 @@ async function detectUpliftSignal(userId, prisma) {
   const entry = await getLastJournalEntry(userId, prisma);
   if (!entry || !entry.content) return null;
 
+  // Only detect positive sentiment in journal entries from the last 48 hours
+  const entryTime = new Date(entry.createdAt).getTime();
+  const currentTime = Date.now();
+  const hoursSinceEntry = (currentTime - entryTime) / (1000 * 60 * 60);
+
+  // If the journal entry is more than 48 hours old, don't show the banner
+  if (hoursSinceEntry > 48) {
+    return null;
+  }
+
   const uplifting = isPositive(entry.content);
 
   if (uplifting) {
@@ -166,8 +212,6 @@ async function detectUpliftSignal(userId, prisma) {
   return null;
 }
 
-
-// NEW SIGNAL: Engagement Drop
 async function detectEngagementDrop(userId, prisma) {
   const thisWeek = await getWeeklyMoodLogCount(userId, prisma, 0);
   const lastWeek = await getPreviousWeeklyMoodCount(userId, prisma, 1);
@@ -223,7 +267,7 @@ async function detectStreakMilestone(userId, prisma) {
       return {
         tag: milestoneTags[streak],
         message: `You've hit a ${streak}-day streak! Keep it up.`,
-        weight: 4,
+        weight: 5, // Highest priority for milestone achievements
         habitStreak: streak,
       };
     }
@@ -234,6 +278,53 @@ async function detectStreakMilestone(userId, prisma) {
   }
 }
 
+// Analyzes user's most frequently used words to provide personalized insights
+async function detectWordUsageInsights(userId) {
+  try {
+    // Get user's sentiment profile based on word frequencies
+    const profile = await getUserSentimentProfile(userId);
+
+    // If we don't have enough data, don't show this signal
+    if (profile.totalWords < 5) return null;
+
+    // Get the top words
+    const topWords = await getTopWords(userId, 5);
+
+    // Create different messages based on sentiment score
+    let message = '';
+    let tag = '';
+    let weight = 3;
+
+    if (profile.score <= -0.3) {
+      // Negative sentiment profile
+      const negativeWords = profile.topNegative.map(w => w.word).slice(0, 3).join(', ');
+      message = `We noticed words like "${negativeWords}" appear often in your journals. Consider exploring these feelings.`;
+      tag = 'word-usage-negative';
+      weight = 4;
+    } else if (profile.score >= 0.3) {
+      // Positive sentiment profile
+      const positiveWords = profile.topPositive.map(w => w.word).slice(0, 3).join(', ');
+      message = `Words like "${positiveWords}" appear often in your journals. These positive themes are great to reflect on!`;
+      tag = 'word-usage-positive';
+      weight = 3;
+    } else {
+      // Neutral sentiment profile
+      const allWords = topWords.map(w => w.word).slice(0, 3).join(', ');
+      message = `Your most used words include "${allWords}". What patterns do you notice in your journaling?`;
+      tag = 'word-usage-neutral';
+      weight = 2;
+    }
+
+    return {
+      tag,
+      message,
+      weight,
+    };
+  } catch (err) {
+    console.error('Error detecting word usage insights:', err);
+    return null;
+  }
+}
 
 module.exports = {
   // Mood-based signals
@@ -251,6 +342,8 @@ module.exports = {
   // Behavior/activity-based signals
   detectEngagementDrop,
   detectLateNightEntry,
-  detectStreakMilestone
+  detectStreakMilestone,
 
+  // Word analysis signals
+  detectWordUsageInsights
 };

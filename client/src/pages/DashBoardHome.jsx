@@ -12,7 +12,47 @@ import ProgressRing from '../components/ProgressRing';
 import { getWeeklyEngagement } from '../utils/engagement.js';
 import { calculateMoodStreak } from '../utils/moodUtils';
 import RecommendationBanner from '../components/RecommendationBanner.jsx';
+import GuideTipModal from '../components/GuideTipModal.jsx';
 import './DashboardHome.css';
+
+// Helper function to get action text based on banner tag
+function getActionTextForBanner(tag) {
+  // Default action text
+  let actionText = "Take Action";
+
+  // Journal-related banners
+  if (tag === 'journal_gap' || tag === 'no_journals_yet') {
+    actionText = "Write Journal";
+  }
+  // Mood-related banners
+  else if (tag === 'mood_drop' || tag === 'low_mood') {
+    actionText = "Log Mood";
+  }
+  else if (tag === 'mood_swing' || tag === 'mood_volatility') {
+    actionText = "View Mood Trends";
+  }
+  // Streak-related banners
+  else if (tag === 'streak_reset') {
+    actionText = "Start New Streak";
+  }
+  else if (tag.includes('milestone-streak')) {
+    actionText = "View Streak";
+  }
+  // Habit-related banners
+  else if (tag.includes('habit')) {
+    actionText = "Check Habits";
+  }
+  // Distress-related banners
+  else if (tag === 'distress_text') {
+    actionText = "Write Journal";
+  }
+  // Positive reflection
+  else if (tag === 'positive_reflection') {
+    actionText = "Continue Journey";
+  }
+
+  return actionText;
+}
 
 // Keep toast from firing twice for the same level
 function showGrowthToastOnce(level) {
@@ -46,6 +86,8 @@ function DashBoardHome() {
   const [streak, setStreak] = useState(0);
   const [banner, setBanner] = useState(null);
   const [showBanner, setShowBanner] = useState(true);
+  const [showGuideTip, setShowGuideTip] = useState(false);
+  const [guideTipType, setGuideTipType] = useState(null);
 
   // Fetch user engagement percentage on initial load and when mood or journal entries change
   const fetchEngagementPercentage = () => {
@@ -130,24 +172,38 @@ function DashBoardHome() {
 
   // Function to load recommendation banner
   const loadBanner = () => {
+    // Don't fetch a new banner if one was recently dismissed
+    const lastDismissTime = localStorage.getItem('lastBannerDismissTime');
+    const lastDismissedTag = localStorage.getItem('lastDismissedBannerTag');
+    const now = Date.now();
+
+    // If a banner was dismissed in the last 2 hours, don't show a new one
+    if (lastDismissTime && (now - parseInt(lastDismissTime)) < 2 * 60 * 60 * 1000) {
+      setShowBanner(false);
+      return;
+    }
+
     axios
       .get('/api/recommendation')
       .then((res) => {
-        if (res.data?.banner?.banner) {
-          setBanner(res.data.banner.banner);
+        if (res.data?.banner) {
+          setBanner(res.data.banner);
+          setShowBanner(true);
         } else {
           setBanner(null);
+          setShowBanner(false);
         }
       })
       .catch(() => {
         setBanner(null);
+        setShowBanner(false);
       });
   };
 
-  // Banner fetch on initial load
+  // Banner fetch on initial load and when data changes
   useEffect(() => {
     loadBanner();
-  }, []);
+  }, [todayMood, entries, logs]); // Refresh when any data changes
 
   // Fetches user profile details
   const fetchUser = async () => {
@@ -245,9 +301,63 @@ function DashBoardHome() {
     <div className="dashboard-home-container">
       {showBanner && banner && (
         <RecommendationBanner
-          title={banner.title}
-          description={banner.description}
-          onClose={() => setShowBanner(false)}
+          title={banner.tag}
+          description={banner.message}
+          onClose={() => {
+            setShowBanner(false);
+            // Add API call to record dismissal
+            axios.post('/api/recommendation/dismiss', { tag: banner.tag })
+              .catch(err => console.error('Failed to record banner dismissal', err));
+          }}
+          onAction={() => {
+            // Show guide tip modal instead of navigating directly
+            setGuideTipType(banner.tag);
+            setShowGuideTip(true);
+          }}
+          actionText="View Guide"
+        />
+      )}
+
+      {/* Guide Tip Modal */}
+      {showGuideTip && (
+        <GuideTipModal
+          type={guideTipType}
+          onClose={() => {
+            setShowGuideTip(false);
+
+            // After closing the guide, navigate to the appropriate page based on the banner type
+            const tag = guideTipType;
+
+            // Journal-related banners
+            if (tag === 'journal_gap' || tag === 'no_journals_yet') {
+              navigate('/dashboard/journal/new');
+            }
+            // Mood-related banners
+            else if (tag === 'mood_drop' || tag === 'low_mood' || tag === 'mood_swing' || tag === 'mood_volatility') {
+              if (!todayMood) {
+                setShowMoodModal(true);
+              } else {
+                navigate('/dashboard/mood');
+              }
+            }
+            // Streak-related banners
+            else if (tag === 'streak_reset' || tag.includes('milestone-streak')) {
+              navigate('/dashboard/mood');
+            }
+            // Habit-related banners
+            else if (tag.includes('habit')) {
+              navigate('/dashboard/habit');
+            }
+            // Distress-related banners
+            else if (tag === 'distress_text') {
+              navigate('/dashboard/journal/new');
+            }
+
+            // Dismiss the banner after viewing the guide
+            setShowBanner(false);
+            axios.post('/api/recommendation/dismiss', { tag })
+              .catch(err => console.error('Failed to record banner dismissal', err));
+          }}
         />
       )}
 

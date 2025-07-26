@@ -1,4 +1,5 @@
 import axiosInstance from './axiosInstance';
+import { getMoodEmoji } from '../utils/moodUtils';
 
 // Constants
 const API_ENDPOINTS = {
@@ -8,15 +9,6 @@ const API_ENDPOINTS = {
 
 const CONTENT_TYPES = {
   MOOD: 'MOOD'
-};
-
-const MOOD_EMOJIS = {
-  1: '😢', // Sad
-  2: '😐', // Neutral
-  3: '😊', // Content
-  4: '😁', // Happy
-  5: '😄', // Excited
-  DEFAULT: '❓' // Unknown
 };
 
 const USER_DEFAULTS = {
@@ -74,11 +66,11 @@ export const getFeedItems = async (cursor = null) => {
         // Format timestamp
         const timestamp = formatTimestamp(item.createdAt);
 
-        // Convert numeric mood to emoji
+        // Convert numeric mood to emoji using the imported getMoodEmoji function
         let moodEmoji = null;
         if (item.type === CONTENT_TYPES.MOOD && item.extra !== null) {
           const moodValue = parseInt(item.extra);
-          moodEmoji = MOOD_EMOJIS[moodValue] || MOOD_EMOJIS.DEFAULT;
+          moodEmoji = getMoodEmoji(moodValue);
         }
 
         // Create a properly formatted feed item based on type

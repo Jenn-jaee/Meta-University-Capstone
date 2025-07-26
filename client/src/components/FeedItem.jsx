@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { getMoodName } from '../utils/moodUtils';
 import './FeedItem.css';
 
 // Constants
@@ -19,13 +20,7 @@ const TOGGLE_LABELS = {
   SHOW_LESS: 'Show less'
 };
 
-const MOOD_EMOJIS = {
-  '😢': 'Sad',
-  '😐': 'Neutral',
-  '😊': 'Content',
-  '😁': 'Happy',
-  '😄': 'Excited'
-};
+// Using the imported getMoodName function from moodUtils.js
 
 const CONTENT_TRUNCATE_LENGTH = 150;
 const DEFAULT_AVATAR = '/plantStages/plantstage-0.svg';
@@ -39,8 +34,24 @@ function FeedItem({ item }) {
     setExpanded(!expanded);
   };
 
-  const getMoodName = (emoji) => {
-    return MOOD_EMOJIS[emoji] || '';
+  // Convert emoji to mood value and then get the mood name
+  const getMoodNameFromEmoji = (emoji) => {
+    // Map emojis to their numeric values
+    const emojiToValue = {
+      '😢': 1, // Sad
+      '😟': 2, // Troubled
+      '😐': 3, // Neutral
+      '😊': 4, // Happy
+      '🤩': 5, // Excited
+      '😁': 4, // Grinning face (old Happy emoji)
+      '😄': 5  // Smiling face with open mouth (old Excited emoji)
+    };
+
+    // Get the mood value from the emoji
+    const moodValue = emojiToValue[emoji] || 3;
+
+    // Use the imported getMoodName function to get the mood name
+    return getMoodName(moodValue);
   };
 
   const renderTruncatedContent = (content) => {
@@ -73,7 +84,7 @@ function FeedItem({ item }) {
             <div className="feed-item-type-label">{ITEM_LABELS.MOOD}</div>
             <div className="feed-item-mood">
               <span className="feed-item-mood-emoji">{item.moodEmoji}</span>
-              <span className="feed-item-mood-text">~ feeling {getMoodName(item.moodEmoji)}</span>
+              <span className="feed-item-mood-text">~ feeling {getMoodNameFromEmoji(item.moodEmoji)}</span>
             </div>
             {item.content && (
               <div className="feed-item-journal">

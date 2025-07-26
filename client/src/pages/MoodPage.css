@@ -1,27 +1,223 @@
 .mood-page-container {
   padding: 2rem;
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
 .mood-page-title {
-  font-size: 1.8rem;
+  font-size: 2rem;
   font-weight: bold;
   margin-bottom: 1.5rem;
   text-align: center;
+  color: #333;
 }
 
-.mood-chart-container {
-  width: 100%;
-  background-color: #f8f9fa;
-  padding: 1rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 0;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .loading-text {
   text-align: center;
   color: #888;
   font-style: italic;
-  margin-top: 2rem;
+}
+
+.error-message {
+  background-color: #fff0f0;
+  border-radius: 12px;
+  padding: 12px 20px;
+  margin-bottom: 24px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.error-message p {
+  color: #d32f2f;
+  margin: 0;
+}
+
+.streak-display {
+  background-color: #fff3e0;
+  border-radius: 12px;
+  padding: 12px 20px;
+  margin-bottom: 24px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.streak-display p {
+  font-size: 1.2rem;
+  color: #ff6d00;
+  margin: 0;
+}
+
+.time-filter {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.filter-button {
+  background-color: #f0f0f0;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 20px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-button:hover {
+  background-color: #e0e0e0;
+}
+
+.filter-button.active {
+  background-color: #9b7ede; /* Lavender color to match header nav */
+  color: white;
+  font-weight: 500; /* Make text slightly bolder */
+}
+
+.date-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.nav-button {
+  background-color: #f0f0f0;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #333;
+}
+
+.nav-button:hover:not(:disabled) {
+  background-color: #e0e0e0;
+}
+
+.nav-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.date-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  color: #555;
+  font-size: 1rem;
+}
+
+.calendar-icon {
+  color: #9b7ede; /* Lavender to match the active buttons */
+}
+
+.mood-chart-container {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.mood-chart-container h3 {
+  font-size: 1.4rem;
+  margin-bottom: 16px;
+  color: #333;
+  text-align: center;
+}
+
+.insights-toggle-button {
+  display: block;
+  margin: 20px auto 0;
+  background-color: #f3e5f5;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 24px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #9b7ede;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.insights-toggle-button:hover {
+  background-color: #e1bee7;
+}
+
+.mood-insights-container {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 24px;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.insights-header {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.insights-header h3 {
+  font-size: 1.4rem;
+  color: #333;
+  margin: 0;
+}
+
+.insights-content {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 992px) {
+  .insights-content {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

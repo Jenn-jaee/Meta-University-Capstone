@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axios from '../api/axiosInstance.js';
 import JournalForm from '../components/JournalForm.jsx';
 import JournalList from '../components/JournalList.jsx';
+import JournalSearch from '../components/JournalSearch.jsx';
 import { STATUS } from '../api/axiosInstance.js';
 import { checkAndGrowPlant } from '../services/plantService';
 import { getRandomJournalMessage } from '../utils/journalMessages';
@@ -19,6 +20,7 @@ function JournalPage() {
   const [editingEntry, setEditingEntry] = useState(null);
   const [loading, setLoading] = useState(true);
   const [journalMessage, setJournalMessage] = useState("");
+  const [searchActive, setSearchActive] = useState(false);
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -64,9 +66,15 @@ function JournalPage() {
   }, [id, entries]);
 
   /* -------- Fetch all journal entries -------- */
-  const fetchEntries = () => {
+  const fetchEntries = (params = {}) => {
+    setLoading(true);
+
+    // Check if we're performing a search
+    const isSearching = Object.values(params).some(value => value !== undefined);
+    setSearchActive(isSearching);
+
     axios
-      .get('/api/journal')
+      .get('/api/journal', { params })
       .then((response) => {
         if (response.status === STATUS.SUCCESS) {
           setEntries(response.data);
@@ -80,7 +88,13 @@ function JournalPage() {
         } else {
           toast.error('Unable to load journal entries.');
         }
+        setLoading(false);
       });
+  };
+
+  /* -------- Handle search -------- */
+  const handleSearch = (params) => {
+    fetchEntries(params);
   };
 
   /* -------- Create or update a journal entry -------- */
@@ -166,7 +180,24 @@ function JournalPage() {
         />
       </div>
 
-      <div className="journal-entries-section">
+      {/* Search component */}
+      <div className="journal-search-section">
+        <JournalSearch onSearch={handleSearch} />
+
+        {searchActive && (
+          <div className="search-results-count">
+            Found {entries.length} {entries.length === 1 ? 'entry' : 'entries'}
+            <button
+              className="clear-search-button"
+              onClick={() => handleSearch({})}
+            >
+              Clear Search
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className={`journal-entries-section ${searchActive ? 'active-search' : ''}`}>
         <JournalList
           entries={entries}
           onEdit={handleEdit}

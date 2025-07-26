@@ -71,12 +71,13 @@
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-.grid-line:nth-child(1) { bottom: 100%; }
-.grid-line:nth-child(2) { bottom: 80%; }
-.grid-line:nth-child(3) { bottom: 60%; }
-.grid-line:nth-child(4) { bottom: 40%; }
-.grid-line:nth-child(5) { bottom: 20%; }
-.grid-line:nth-child(6) { bottom: 0%; }
+/* Grid lines from bottom to top: Sad(1) → Troubled(2) → Neutral(3) → Happy(4) → Excited(5) */
+.grid-line:nth-child(1) { bottom: 0%; }    /* Sad (1) */
+.grid-line:nth-child(2) { bottom: 20%; }   /* Troubled (2) */
+.grid-line:nth-child(3) { bottom: 40%; }   /* Neutral (3) */
+.grid-line:nth-child(4) { bottom: 60%; }   /* Happy (4) */
+.grid-line:nth-child(5) { bottom: 80%; }   /* Excited (5) */
+.grid-line:nth-child(6) { bottom: 100%; }  /* Top line */
 
 .data-points {
   position: absolute;

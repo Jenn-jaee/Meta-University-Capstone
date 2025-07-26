@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import axios from '../api/axiosInstance';
 import { checkAndGrowPlant } from '../services/plantService';
+import { moodOptions, moodMap } from '../utils/moodUtils';
 
 import './MoodModal.css';
 
@@ -10,14 +11,12 @@ function MoodModal({ onClose, onSuccess }) {
   const [status, setStatus] = useState(null); // 'success' or 'error'
   const [message, setMessage] = useState('');
 
-  // List of available moods with labels
-  const moods = [
-    { emoji: '😢', label: 'Sad' },
-    { emoji: '😐', label: 'Neutral' },
-    { emoji: '😊', label: 'Content' },
-    { emoji: '😁', label: 'Happy' },
-    { emoji: '😄', label: 'Excited' },
-  ];
+  // Create moods array from moodOptions with numeric values from moodMap
+  const moods = moodOptions.map(option => ({
+    emoji: option.emoji,
+    label: option.label,
+    value: moodMap[option.value] // Convert string value to numeric value using moodMap
+  }));
 
   // Handles form submission for mood check-in
   const handleSubmit = async () => {
@@ -29,10 +28,8 @@ function MoodModal({ onClose, onSuccess }) {
     }
 
     try {
-
-      // Convert selected mood label to numeric value (1–5)
-      const moodIndex = moods.findIndex(m => m.label === selectedMood);
-      const moodValue = moodIndex !== -1 ? moodIndex + 1 : 3; // Default to 3 if no match
+      // selectedMood is now the numeric value directly
+      const moodValue = selectedMood;
 
       // 1. Save mood log
       await axios.post('/api/mood-logs', {
@@ -85,11 +82,11 @@ function MoodModal({ onClose, onSuccess }) {
 
         {/* Mood options */}
         <div className="mood-options">
-          {moods.map(({ emoji, label }) => (
+          {moods.map(({ emoji, label, value }) => (
             <button
               key={label}
-              className={`emoji-button ${selectedMood === label ? 'selected' : ''}`}
-              onClick={() => setSelectedMood(label)}
+              className={`emoji-button ${selectedMood === value ? 'selected' : ''}`}
+              onClick={() => setSelectedMood(value)}
             >
               {emoji} {label}
             </button>

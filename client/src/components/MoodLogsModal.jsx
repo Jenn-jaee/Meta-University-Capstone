@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from '../api/axiosInstance';
+import { getMoodEmoji } from '../utils/moodUtils';
 import './MoodModal.css';
 import './MoodLogsModal.css';
 
@@ -32,17 +33,7 @@ function MoodLogsModal({ onClose }) {
     fetchWeeklyMoodLogs();
   }, []);
 
-  // Convert mood value (1-5) into matching emoji
-  const getMoodEmoji = (value) => {
-    const moodMap = {
-      1: '😢', // Sad
-      2: '😐', // Neutral
-      3: '😊', // Content
-      4: '😁', // Happy
-      5: '😄', // Excited
-    };
-    return moodMap[value] || '🙂';
-  };
+  // Using the imported getMoodEmoji function from moodUtils.js
 
   // Format date to display day and time
   const formatDate = (dateString) => {

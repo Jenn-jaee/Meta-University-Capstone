@@ -1,41 +1,68 @@
-// Mapping between mood names and numeric values (0-5)
+// moodUtils.js
+// This file contains utilities specifically for the mood logs feature.
+// For journal-related mood utilities, see journalMoodUtils.js
+
+// Mapping between mood names and numeric values (1-5) for mood logs
 export const moodMap = {
   // String to number mapping (for form submissions)
-  happy: 5,
-  excited: 4,
+  excited: 5,
+  happy: 4,
   neutral: 3,
-  anxious: 2,
+  troubled: 2,
   sad: 1,
-  angry: 0,
 
   // Number to string mapping (for display from database values)
-  0: 'angry',
   1: 'sad',
-  2: 'anxious',
+  2: 'troubled',
   3: 'neutral',
-  4: 'excited',
-  5: 'happy'
+  4: 'happy',
+  5: 'excited'
 };
 
-// Emoji mapping for moods
+// Emoji mapping for mood logs
 export const moodEmojis = {
+  sad: '😢',
+  troubled: '😟',
+  neutral: '😐',
   happy: '😊',
   excited: '🤩',
-  neutral: '😐',
-  anxious: '😰',
-  sad: '😢',
-  angry: '😠',
 };
 
-// Mood options for selection in forms
+// Mood options for selection in mood log forms
 export const moodOptions = [
-  { value: 'happy', emoji: '😊', label: 'Happy' },
-  { value: 'excited', emoji: '🤩', label: 'Excited' },
-  { value: 'neutral', emoji: '😐', label: 'Neutral' },
-  { value: 'anxious', emoji: '😰', label: 'Anxious' },
   { value: 'sad', emoji: '😢', label: 'Sad' },
-  { value: 'angry', emoji: '😠', label: 'Angry' }
+  { value: 'troubled', emoji: '😟', label: 'Troubled' },
+  { value: 'neutral', emoji: '😐', label: 'Neutral' },
+  { value: 'happy', emoji: '😊', label: 'Happy' },
+  { value: 'excited', emoji: '🤩', label: 'Excited' }
 ];
+
+// Helper function to get mood emoji by numeric value
+export const getMoodEmoji = (value) => {
+  // Map numeric values to emojis directly
+  const moodEmojisMap = {
+    1: '😢', // Sad
+    2: '😟', // Troubled
+    3: '😐', // Neutral
+    4: '😊', // Happy
+    5: '🤩', // Excited
+  };
+
+  return moodEmojisMap[value] || '😐'; // Default to neutral
+};
+
+// Helper function to get mood name by numeric value
+export const getMoodName = (value) => {
+  const moodNamesMap = {
+    1: 'Sad',
+    2: 'Troubled',
+    3: 'Neutral',
+    4: 'Happy',
+    5: 'Excited'
+  };
+
+  return moodNamesMap[value] || 'Neutral';
+};
 
 export function calculateMoodStreak(logs) {
   if (!logs || logs.length === 0) return 0;
@@ -52,18 +79,23 @@ export function calculateMoodStreak(logs) {
   });
 
   // Convert to array and sort (newest first)
-  const uniqueDates = Array.from(dateSet).sort().reverse();
+  // Use proper date sorting to ensure correct order
+  const uniqueDates = Array.from(dateSet).sort((a, b) => {
+    return new Date(b) - new Date(a); // Sort in descending order (newest first)
+  });
 
   // Find the most recent log date
   let mostRecentLogDate = uniqueDates[0];
 
-  // If the most recent log is not from today or yesterday, streak is broken
+  // Check if the streak is current (today or yesterday)
   const today = toDayString(new Date());
-  if (mostRecentLogDate !== today) {
-    const yesterday = toDayString(new Date(Date.now() - 86400000));
-    if (mostRecentLogDate !== yesterday) {
-      return 0; // Streak is broken
-    }
+  const yesterday = toDayString(new Date(Date.now() - 86400000));
+
+  // A streak is only valid if the most recent log is from today or yesterday
+  const isCurrentStreak = mostRecentLogDate === today || mostRecentLogDate === yesterday;
+
+  if (!isCurrentStreak) {
+    return 0; // Streak is not current
   }
 
   // Start counting streak from most recent log

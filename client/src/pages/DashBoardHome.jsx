@@ -10,7 +10,7 @@ import PlantGrid from '../components/PlantGrid';
 import { checkAndGrowPlant } from '../services/plantService';
 import ProgressRing from '../components/ProgressRing';
 import { getWeeklyEngagement } from '../utils/engagement.js';
-import { calculateMoodStreak } from '../utils/moodUtils';
+import { calculateMoodStreak, getMoodEmoji } from '../utils/moodUtils';
 import RecommendationBanner from '../components/RecommendationBanner.jsx';
 import GuideTipModal from '../components/GuideTipModal.jsx';
 import './DashboardHome.css';
@@ -212,6 +212,7 @@ function DashBoardHome() {
       const user = res.data;
       setDisplayName(user.displayName || '');
       setHasSeenWelcome(user.hasSeenWelcome || false);
+      setStreak(user.currentStreak || 0); // Use server's streak value
       if (!user.displayName || !user.hasSeenWelcome) {
         setShowWelcomeModal(true);
       }
@@ -285,17 +286,7 @@ function DashBoardHome() {
     }
   };
 
-  // Converts mood value (1-5) into matching emoji
-  const getMoodEmoji = (value) => {
-    const moodMap = {
-      1: '😢',
-      2: '😐',
-      3: '😊',
-      4: '😁',
-      5: '😄',
-    };
-    return moodMap[value] || '🙂';
-  };
+  // Using the imported getMoodEmoji function from moodUtils.js
 
   return (
     <div className="dashboard-home-container">

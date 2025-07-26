@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import './Journal.css';
-import { moodMap, moodOptions } from '../utils/moodUtils';
+import { journalMoodMap, journalMoodOptions } from '../utils/journalMoodUtils';
 import { MoodIcons } from './MoodIcons';
 
 function JournalForm({ onSubmit, editingEntry, onCancel }) {
@@ -12,7 +12,7 @@ function JournalForm({ onSubmit, editingEntry, onCancel }) {
     if (editingEntry) {
       setTitle(editingEntry.title);
       setContent(editingEntry.content);
-      setMood(editingEntry.journalMood !== undefined ? moodMap[editingEntry.journalMood] : 'neutral');
+      setMood(editingEntry.journalMood !== undefined ? journalMoodMap[editingEntry.journalMood] : 'neutral');
     } else {
       setTitle('');
       setContent('');
@@ -22,7 +22,7 @@ function JournalForm({ onSubmit, editingEntry, onCancel }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit({ title, content, journalMood: moodMap[mood] || 3 });
+    onSubmit({ title, content, journalMood: journalMoodMap[mood] || 3 });
     if (!editingEntry) {
       setTitle('');
       setContent('');
@@ -58,7 +58,7 @@ function JournalForm({ onSubmit, editingEntry, onCancel }) {
         <div className="mood-selector">
           <label className="mood-label">How are you feeling today?</label>
           <div className="mood-options">
-            {moodOptions.map((m) => (
+            {journalMoodOptions.map((m) => (
               <label
                 key={m.value}
                 className={`mood-option ${mood === m.value ? 'mood-selected' : ''}`}

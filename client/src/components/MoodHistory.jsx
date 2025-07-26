@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { FaCalendarAlt, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
-import { moodEmojis } from '../utils/moodUtils';
+import { getMoodEmoji } from '../utils/moodUtils';
 import './MoodHistory.css';
 
 const MoodHistory = ({ moodData }) => {
@@ -73,20 +73,7 @@ const MoodHistory = ({ moodData }) => {
     return `${startDate.toLocaleDateString('en-US', options)} - ${endDate.toLocaleDateString('en-US', options)}`;
   };
 
-  // Get mood emoji for a given value
-  const getMoodEmoji = (value) => {
-    const moodNames = {
-      0: 'angry',
-      1: 'sad',
-      2: 'anxious',
-      3: 'neutral',
-      4: 'excited',
-      5: 'happy'
-    };
-
-    const moodName = moodNames[value] || 'neutral';
-    return moodEmojis[moodName];
-  };
+  // Using the imported getMoodEmoji function from moodUtils.js
 
   // Format date for display
   const formatDate = (dateString) => {

@@ -35,6 +35,13 @@ function MoodPage() {
     const fetchMoodLogs = async () => {
       try {
         setLoading(true);
+
+        // Fetch user data to get the current streak from server
+        const userRes = await axios.get('/api/user/me');
+        if (userRes.data && userRes.data.currentStreak !== undefined) {
+          setStreak(userRes.data.currentStreak);
+        }
+
         // Explicitly fetch from mood logs endpoint to ensure we're using mood log data
         const res = await axios.get('/api/mood-logs');
         const data = res.data;
@@ -47,15 +54,11 @@ function MoodPage() {
 
           setAllMoodLogs(sortedData);
 
-          // Calculate streak
-          setStreak(calculateMoodStreak(sortedData));
-
           // Initialize with current period
           initializeDateRange(sortedData, timeFilter);
         } else {
           // Use fallback data if no data is returned
           setAllMoodLogs(fallbackData);
-          setStreak(calculateMoodStreak(fallbackData));
           initializeDateRange(fallbackData, timeFilter);
         }
 
@@ -63,7 +66,7 @@ function MoodPage() {
       } catch (err) {
         // Error silently handled - use fallback data if API call fails
         setAllMoodLogs(fallbackData);
-        setStreak(calculateMoodStreak(fallbackData));
+        setStreak(calculateMoodStreak(fallbackData)); // Fallback to client calculation if server fetch fails
         initializeDateRange(fallbackData, timeFilter);
         setError('Could not load mood data from server. Using sample data instead.');
         setLoading(false);

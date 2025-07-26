@@ -68,14 +68,16 @@ export const MoodIcons = {
   )
 };
 
+import { getJournalMoodName } from '../utils/journalMoodUtils';
+
 export const getMoodIcon = (value) => {
   const moodIcons = {
-    5: { icon: <MoodIcons.Happy />, name: 'Happy' },
-    4: { icon: <MoodIcons.Excited />, name: 'Excited' },
-    3: { icon: <MoodIcons.Neutral />, name: 'Neutral' },
-    2: { icon: <MoodIcons.Anxious />, name: 'Anxious' },
-    1: { icon: <MoodIcons.Sad />, name: 'Sad' },
-    0: { icon: <MoodIcons.Angry />, name: 'Angry' }
+    5: { icon: <MoodIcons.Happy />, name: getJournalMoodName(5) },
+    4: { icon: <MoodIcons.Excited />, name: getJournalMoodName(4) },
+    3: { icon: <MoodIcons.Neutral />, name: getJournalMoodName(3) },
+    2: { icon: <MoodIcons.Anxious />, name: getJournalMoodName(2) },
+    1: { icon: <MoodIcons.Sad />, name: getJournalMoodName(1) },
+    0: { icon: <MoodIcons.Angry />, name: getJournalMoodName(0) }
   };
   return moodIcons[value] || moodIcons[3]; // Default to neutral
 };

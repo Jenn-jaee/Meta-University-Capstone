@@ -14,18 +14,23 @@ function calculateMoodStreak(logs) {
   });
 
   // Convert to array and sort (newest first)
-  const uniqueDates = Array.from(dateSet).sort().reverse();
+  // Use proper date sorting to ensure correct order
+  const uniqueDates = Array.from(dateSet).sort((a, b) => {
+    return new Date(b) - new Date(a); // Sort in descending order (newest first)
+  });
 
   // Find the most recent log date
   let mostRecentLogDate = uniqueDates[0];
 
-  // If the most recent log is not from today or yesterday, streak is broken
+  // Check if the streak is current (today or yesterday)
   const today = toDayString(new Date());
-  if (mostRecentLogDate !== today) {
-    const yesterday = toDayString(new Date(Date.now() - 86400000));
-    if (mostRecentLogDate !== yesterday) {
-      return 0; // Streak is broken
-    }
+  const yesterday = toDayString(new Date(Date.now() - 86400000));
+
+  // A streak is only valid if the most recent log is from today or yesterday
+  const isCurrentStreak = mostRecentLogDate === today || mostRecentLogDate === yesterday;
+
+  if (!isCurrentStreak) {
+    return 0;
   }
 
   // Start counting streak from most recent log

@@ -1,5 +1,5 @@
 import { FaArrowUp, FaArrowDown, FaEquals } from 'react-icons/fa';
-import { moodEmojis } from '../utils/moodUtils';
+import { getMoodEmoji, getMoodName } from '../utils/moodUtils';
 import './WeeklyMoodSummary.css';
 
 const WeeklyMoodSummary = ({ weeklyData }) => {
@@ -85,34 +85,7 @@ const WeeklyMoodSummary = ({ weeklyData }) => {
     }
   }
 
-  // Map mood values to their corresponding emojis
-  const getMoodEmoji = (value) => {
-    const moodNames = {
-      0: 'angry',
-      1: 'sad',
-      2: 'anxious',
-      3: 'neutral',
-      4: 'excited',
-      5: 'happy'
-    };
-
-    const moodName = moodNames[value] || 'neutral';
-    return moodEmojis[moodName];
-  };
-
-  // Map mood values to their corresponding names
-  const getMoodName = (value) => {
-    const moodNames = {
-      0: 'Angry',
-      1: 'Sad',
-      2: 'Anxious',
-      3: 'Neutral',
-      4: 'Excited',
-      5: 'Happy'
-    };
-
-    return moodNames[value] || 'Neutral';
-  };
+  // Using the imported getMoodEmoji and getMoodName functions from moodUtils.js
 
   // Generate insights based on the data with more personalized messages
   const generateInsight = () => {

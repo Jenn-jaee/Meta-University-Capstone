@@ -39,6 +39,7 @@ router.get('/me', checkAuth, async (req, res) => {
         privateJournal: true,
         hasSeenWelcome: true,
         googleId: true, // tells frontend if email should be read-only
+        currentStreak: true, // Include the streak from the database
       },
     });
 

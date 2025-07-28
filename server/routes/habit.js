@@ -121,8 +121,74 @@ router.patch('/:id/toggle', (req, res) => {
 });
 
 
-// DELETE /api/habits/:id - Delete a habit
+// POST /api/habits/verify-streaks - Verify and update habit streaks
+router.post('/verify-streaks', async (req, res) => {
+  const userId = req.userId;
+  
+  try {
+    // Get all habits for the user
+    const habits = await prisma.habit.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
+    
+    let updated = false;
+    
+    // Process each habit to verify streak
+    for (const habit of habits) {
+      let shouldResetStreak = false;
+      
+      // Get the most recent completed log for this habit
+      const lastCompletedLog = await prisma.habitLog.findFirst({
+        where: {
+          habitId: habit.id,
+          completed: true,
+        },
+        orderBy: {
+          date: 'desc',
+        },
+      });
+      
+      // Determine if streak should be reset
+      if (!lastCompletedLog) {
+        // No logs yet, streak should be 0
+        shouldResetStreak = habit.streak !== 0;
+      } else {
+        // Check days since last completion
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const lastLogDate = new Date(lastCompletedLog.date);
+        lastLogDate.setHours(0, 0, 0, 0);
+        
+        const daysSinceLastLog = Math.floor((today - lastLogDate) / (1000 * 60 * 60 * 24));
+        
+        // Reset streak if more than 1 day has passed since last completion
+        shouldResetStreak = daysSinceLastLog > 1 && habit.streak > 0;
+      }
+      
+      // Update streak if needed
+      if (shouldResetStreak) {
+        await prisma.habit.update({
+          where: { id: habit.id },
+          data: { streak: 0 },
+        });
+        habit.streak = 0;
+        updated = true;
+      }
+    }
+    
+    // Return habits with their current streak values
+    return res.json({
+      updated,
+      habits,
+    });
+  } catch (error) {
+    return res.status(STATUS.SERVER_ERROR).json({ message: 'Failed to verify habit streaks' });
+  }
+});
 
+// DELETE /api/habits/:id - Delete a habit
 router.delete('/:id', async (req, res) => {
   const userId = req.userId;
   const habitId = req.params.id;

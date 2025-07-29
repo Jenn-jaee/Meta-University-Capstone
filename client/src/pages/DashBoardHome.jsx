@@ -16,44 +16,6 @@ import GuideTipModal from '../components/GuideTipModal.jsx';
 import DailyQuote from '../components/DailyQuotes.jsx';
 import './DashboardHome.css';
 
-// Helper function to get action text based on banner tag
-function getActionTextForBanner(tag) {
-  // Default action text
-  let actionText = "Take Action";
-
-  // Journal-related banners
-  if (tag === 'journal_gap' || tag === 'no_journals_yet') {
-    actionText = "Write Journal";
-  }
-  // Mood-related banners
-  else if (tag === 'mood_drop' || tag === 'low_mood') {
-    actionText = "Log Mood";
-  }
-  else if (tag === 'mood_swing' || tag === 'mood_volatility') {
-    actionText = "View Mood Trends";
-  }
-  // Streak-related banners
-  else if (tag === 'streak_reset') {
-    actionText = "Start New Streak";
-  }
-  else if (tag.includes('milestone-streak')) {
-    actionText = "View Streak";
-  }
-  // Habit-related banners
-  else if (tag.includes('habit')) {
-    actionText = "Check Habits";
-  }
-  // Distress-related banners
-  else if (tag === 'distress_text') {
-    actionText = "Write Journal";
-  }
-  // Positive reflection
-  else if (tag === 'positive_reflection') {
-    actionText = "Continue Journey";
-  }
-
-  return actionText;
-}
 
 // Keep toast from firing twice for the same level
 function showGrowthToastOnce(level) {
@@ -106,17 +68,17 @@ function DashBoardHome() {
 
   // Fetch user profile on initial load
   useEffect(() => {
-    fetchUser();
+    fetchData.user();
   }, []);
 
   // After user profile is loaded, fetch other data
   useEffect(() => {
     if (displayName !== '') {
-      fetchTodayMood();
-      fetchPlantStage();
-      fetchHabits();
-      fetchHabitLogs();
-      fetchJournalEntries();
+      fetchData.todayMood();
+      fetchData.plantStage();
+      fetchData.habits();
+      fetchData.habitLogs();
+      fetchData.journalEntries();
     }
   }, [displayName]);
 
@@ -175,7 +137,6 @@ function DashBoardHome() {
   const loadBanner = () => {
     // Don't fetch a new banner if one was recently dismissed
     const lastDismissTime = localStorage.getItem('lastBannerDismissTime');
-    const lastDismissedTag = localStorage.getItem('lastDismissedBannerTag');
     const now = Date.now();
 
     // If a banner was dismissed in the last 2 hours, don't show a new one
@@ -206,69 +167,72 @@ function DashBoardHome() {
     loadBanner();
   }, [todayMood, entries, logs]); // Refresh when any data changes
 
-  // Fetches user profile details
-  const fetchUser = async () => {
-    try {
-      const res = await axios.get('/api/user/me');
-      const user = res.data;
-      setDisplayName(user.displayName || '');
-      setHasSeenWelcome(user.hasSeenWelcome || false);
-      setStreak(user.currentStreak || 0); // Use server's streak value
-      if (!user.displayName || !user.hasSeenWelcome) {
-        setShowWelcomeModal(true);
+  // Fetch data functions consolidated with error handling
+  const fetchData = {
+    // Fetches user profile details
+    user: async () => {
+      try {
+        const res = await axios.get('/api/user/me');
+        const user = res.data;
+        setDisplayName(user.displayName || '');
+        setHasSeenWelcome(user.hasSeenWelcome || false);
+        setStreak(user.currentStreak || 0);
+        if (!user.displayName || !user.hasSeenWelcome) {
+          setShowWelcomeModal(true);
+        }
+      } catch {
+        toast.error('Unable to load user.');
       }
-    } catch {
-      toast.error('Unable to load user.');
-    }
-  };
+    },
 
-  // Fetches today's mood log (if already submitted)
-  const fetchTodayMood = async () => {
-    try {
-      const res = await axios.get('/api/mood-logs/today');
-      setTodayMood(res.data);
-    } catch {
-      setTodayMood(null);
-    }
-  };
+    // Fetches today's mood log (if already submitted)
+    todayMood: async () => {
+      try {
+        const res = await axios.get('/api/mood-logs/today');
+        setTodayMood(res.data);
+      } catch {
+        setTodayMood(null);
+      }
+    },
 
-  // Fetches current plant stage for garden view
-  const fetchPlantStage = async () => {
-    try {
-      const res = await axios.get('/api/plant-growth/me');
-      setPlantStage(res.data.level || 1); // update to use level
-    } catch {
-      toast.error('Unable to load plant stage.');
-    }
-  };
+    // Fetches current plant stage for garden view
+    plantStage: async () => {
+      try {
+        const res = await axios.get('/api/plant-growth/me');
+        setPlantStage(res.data.level || 1);
+      } catch {
+        toast.error('Unable to load plant stage.');
+      }
+    },
 
-  // Fetches all user habits
-  const fetchHabits = async () => {
-    try {
-      const res = await axios.get('/api/habits');
-      setHabits(res.data);
-    } catch {
-      toast.error('Unable to load habits.');
-    }
-  };
+    // Fetches all user habits
+    habits: async () => {
+      try {
+        const res = await axios.get('/api/habits');
+        setHabits(res.data);
+      } catch {
+        toast.error('Unable to load habits.');
+      }
+    },
 
-  // Fetches today's habit logs (for checkbox display)
-  const fetchHabitLogs = async () => {
-    try {
-      const res = await axios.get('/api/habit-logs/today');
-      setLogs(res.data);
-    } catch {
-      toast.error('Unable to load habit logs.');
-    }
-  };
+    // Fetches today's habit logs (for checkbox display)
+    habitLogs: async () => {
+      try {
+        const res = await axios.get('/api/habit-logs/today');
+        setLogs(res.data);
+      } catch {
+        toast.error('Unable to load habit logs.');
+      }
+    },
 
-  // Fetches user's journal entries for display
-  const fetchJournalEntries = async () => {
-    try {
-      const res = await axios.get('/api/journal');
-      setEntries(res.data);
-    } catch {
-      toast.error('Unable to load journal entries.');
+    // Fetches user's journal entries for display
+    journalEntries: async () => {
+      try {
+        const res = await axios.get('/api/journal');
+        setEntries(res.data);
+      } catch {
+        toast.error('Unable to load journal entries.');
+      }
     }
   };
 
@@ -287,10 +251,47 @@ function DashBoardHome() {
     }
   };
 
-  // Using the imported getMoodEmoji function from moodUtils.js
+
+  // Helper function to get action text based on banner tag
+  const getActionTextForBanner = (tag) => {
+    // Map of banner types to their action text
+    const actionTextMap = {
+      // Journal-related
+      'journal_gap': "Write Journal",
+      'no_journals_yet': "Write Journal",
+
+      // Distress-related
+      'distress_text': "Chat with BloomBot",
+
+      // Mood-related
+      'mood_drop': "Log Mood",
+      'low_mood': "Log Mood",
+      'mood_swing': "View Mood Trends",
+      'mood_volatility': "View Mood Trends",
+
+      // Streak-related
+      'streak_reset': "Start New Streak",
+
+      // Positive reflection
+      'positive_reflection': "Continue Journey"
+    };
+
+    // Return the mapped action text or check for partial matches
+    if (actionTextMap[tag]) {
+      return actionTextMap[tag];
+    } else if (tag.includes('milestone-streak')) {
+      return "View Streak";
+    } else if (tag.includes('habit')) {
+      return "Check Habits";
+    }
+
+    // Default action text
+    return "View Guide";
+  };
 
   return (
     <div className="dashboard-home-container">
+
       {showBanner && banner && (
         <RecommendationBanner
           title={banner.tag}
@@ -308,7 +309,7 @@ function DashBoardHome() {
             setGuideTipType(banner.tag);
             setShowGuideTip(true);
           }}
-          actionText="View Guide"
+          actionText={getActionTextForBanner(banner.tag)}
         />
       )}
 
@@ -322,30 +323,42 @@ function DashBoardHome() {
             // After closing the guide, navigate to the appropriate page based on the banner type
             const tag = guideTipType;
 
-            // Journal-related banners
-            if (tag === 'journal_gap' || tag === 'no_journals_yet') {
-              navigate('/dashboard/journal/new');
-            }
-            // Mood-related banners
-            else if (tag === 'mood_drop' || tag === 'low_mood' || tag === 'mood_swing' || tag === 'mood_volatility') {
-              if (!todayMood) {
-                setShowMoodModal(true);
-              } else {
+            // Handle navigation based on banner tag
+            const handleBannerNavigation = () => {
+              // Journal related
+              if (tag === 'journal_gap' || tag === 'no_journals_yet') {
+                navigate('/dashboard/journal/new');
+              }
+              // Distress related - open BloomBot chat
+              else if (tag === 'distress_text') {
+                // Find BloomBot button and click it to open the chat
+                const bloomBotButton = document.querySelector('.bloombot-button');
+                if (bloomBotButton) {
+                  bloomBotButton.click();
+                } else {
+                  // If button not found, stay on dashboard
+                  toast.info('BloomBot is ready to chat with you! Look for the flower icon.');
+                }
+              }
+              // Mood-related banners
+              else if (['mood_drop', 'low_mood', 'mood_swing', 'mood_volatility'].includes(tag)) {
+                if (!todayMood) {
+                  setShowMoodModal(true);
+                } else {
+                  navigate('/dashboard/mood');
+                }
+              }
+              // Streak-related banners
+              else if (tag === 'streak_reset' || tag.includes('milestone-streak')) {
                 navigate('/dashboard/mood');
               }
-            }
-            // Streak-related banners
-            else if (tag === 'streak_reset' || tag.includes('milestone-streak')) {
-              navigate('/dashboard/mood');
-            }
-            // Habit-related banners
-            else if (tag.includes('habit')) {
-              navigate('/dashboard/habit');
-            }
-            // Distress-related banners
-            else if (tag === 'distress_text') {
-              navigate('/dashboard/journal/new');
-            }
+              // Habit-related banners
+              else if (tag.includes('habit')) {
+                navigate('/dashboard/habit');
+              }
+            };
+
+            handleBannerNavigation();
 
             // Dismiss the banner after viewing the guide
             setShowBanner(false);
@@ -420,7 +433,7 @@ function DashBoardHome() {
                   id: 'plantGrewModal',
                 });
               } else {
-                fetchPlantStage();
+                fetchData.plantStage();
               }
               loadBanner(); // Refresh banner after success
               setShowMoodModal(false);

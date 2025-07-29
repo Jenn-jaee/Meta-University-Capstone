@@ -1,0 +1,353 @@
+/* BloomBot Container */
+.bloombot-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* BloomBot Button */
+.bloombot-button {
+  background: linear-gradient(135deg, #9d50bb 0%, #6e48aa 100%);
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(157, 80, 187, 0.4);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bloombot-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(157, 80, 187, 0.5);
+}
+
+.bloombot-button-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bloombot-icon {
+  font-size: 20px;
+}
+
+/* BloomBot Chat Window */
+.bloombot-chat {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 500px;
+  height: 700px;
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 5px 30px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.bloombot-chat.minimized {
+  height: 60px;
+}
+
+/* BloomBot Header */
+.bloombot-header {
+  background: linear-gradient(135deg, #9d50bb 0%, #6e48aa 100%);
+  color: white;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+}
+
+.bloombot-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bloombot-title h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.bloombot-avatar {
+  width: 30px;
+  height: 30px;
+  background-color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.bloombot-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.bloombot-minimize,
+.bloombot-close {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.bloombot-minimize:hover,
+.bloombot-close:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Messages Container */
+.bloombot-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  background-color: #f8f8f8;
+}
+
+/* Scrollbar Styling */
+.bloombot-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.bloombot-messages::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.bloombot-messages::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 10px;
+}
+
+.bloombot-messages::-webkit-scrollbar-thumb:hover {
+  background: #ccc;
+}
+
+/* Message Styling */
+.message {
+  display: flex;
+  align-items: flex-start;
+  max-width: 80%;
+}
+
+.bot-message {
+  align-self: flex-start;
+}
+
+.user-message {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.bot-avatar {
+  width: 30px;
+  height: 30px;
+  background-color: #f0e7fa;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.message-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.message-text {
+  padding: 14px 18px;
+  border-radius: 18px;
+  font-size: 15px;
+  line-height: 1.6;
+  word-wrap: break-word;
+  white-space: pre-line; /* Preserves line breaks from the server */
+}
+
+.bot-message .message-text {
+  background-color: #f0e7fa;
+  border-top-left-radius: 4px;
+  color: #333;
+  max-width: 100%;
+}
+
+/* Style for markdown elements in bot messages */
+.bot-message .message-text strong,
+.bot-message .message-text b {
+  font-weight: 600;
+  color: #6e48aa;
+}
+
+.bot-message .message-text ul {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.bot-message .message-text li {
+  margin-bottom: 4px;
+}
+
+.bot-message .message-text p {
+  margin: 8px 0;
+}
+
+.user-message .message-text {
+  background-color: #9d50bb;
+  color: white;
+  border-top-right-radius: 4px;
+}
+
+.message-time {
+  font-size: 11px;
+  color: #999;
+  margin-top: 4px;
+  align-self: flex-end;
+}
+
+/* Typing Indicator */
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #f0e7fa;
+  border-radius: 18px;
+  border-top-left-radius: 4px;
+}
+
+.typing-indicator span {
+  height: 8px;
+  width: 8px;
+  margin: 0 2px;
+  background-color: #9d50bb;
+  border-radius: 50%;
+  display: inline-block;
+  opacity: 0.4;
+  animation: typing 1.4s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing {
+  0% {
+    transform: translateY(0px);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(-5px);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(0px);
+    opacity: 0.4;
+  }
+}
+
+/* Input Area */
+.bloombot-input {
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-top: 1px solid #eee;
+  background-color: white;
+}
+
+.bloombot-input textarea {
+  flex: 1;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  padding: 12px 18px;
+  font-size: 15px;
+  resize: none;
+  outline: none;
+  transition: border-color 0.3s;
+  font-family: inherit;
+  max-height: 120px;
+  min-height: 45px;
+}
+
+.bloombot-input textarea:focus {
+  border-color: #9d50bb;
+}
+
+.send-button {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #9d50bb 0%, #6e48aa 100%);
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.send-button:hover {
+  transform: scale(1.05);
+}
+
+.send-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.send-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .bloombot-chat {
+    width: 90%;
+    height: 70vh;
+    bottom: 10px;
+    right: 5%;
+    left: 5%;
+  }
+
+  .bloombot-button {
+    right: 10px;
+  }
+}

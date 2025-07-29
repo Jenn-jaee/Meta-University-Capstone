@@ -1,6 +1,6 @@
 import { Toaster } from 'react-hot-toast';
 import SignIn from './components/signIn';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import DashboardLayout from './pages/DashboardLayout';
 import DashboardHome from './pages/DashBoardHome';
 import JournalPage from './pages/JournalPage';
@@ -11,7 +11,15 @@ import WelcomePage from './pages/WelcomePage';
 import SettingsPanel from './components/SettingsPanel.jsx';
 import FeedPage from './pages/FeedPage';
 import ConnectPage from './pages/ConnectPage';
+import BloomBot from './components/BloomBot';
 
+// This component will render BloomBot only on dashboard pages
+function BloomBotWrapper() {
+  const location = useLocation();
+  const isDashboardPage = location.pathname.includes('/dashboard');
+
+  return isDashboardPage ? <BloomBot /> : null;
+}
 
 function App() {
   return (
@@ -33,6 +41,7 @@ function App() {
           <Route path="connect" element={<ConnectPage />} />
         </Route>
       </Routes>
+      <BloomBotWrapper />
     </Router>
   );
 }

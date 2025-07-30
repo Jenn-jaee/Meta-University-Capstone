@@ -11,15 +11,67 @@ function BloomBot() {
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
 
-  // Initialize with a simple greeting
+  // Initialize with context-aware greeting
   useEffect(() => {
+    // Only initialize messages when chat is shown
+    if (!showChat) return;
+
+    // Check if there's a specific context for opening BloomBot
+    const contextData = localStorage.getItem('bloomBotContext');
+
+    if (contextData) {
+      try {
+        const context = JSON.parse(contextData);
+
+        // Check if context is recent (within last 30 seconds)
+        const timeDiff = Date.now() - context.timestamp;
+        const isRecent = timeDiff < 30000; // 30 seconds
+
+        if (isRecent) {
+          // Different messages based on context type
+          if (context.type === 'distress_journal') {
+            // Custom message for distress in journal
+            setMessages([{
+              id: 1,
+              text: "Hi there, I noticed your journal entry contained some concerning words. This is a safe space - would you like to talk about what's going on? I'm here to help you navigate through these feelings.",
+              sender: 'bot',
+              timestamp: new Date()
+            }]);
+
+            // Clear the context after using it
+            localStorage.removeItem('bloomBotContext');
+            return;
+          }
+          else if (context.type === 'negative_journal') {
+            // Custom message for negative sentiment in journal
+            setMessages([{
+              id: 1,
+              text: "I noticed your journal entry had some negative emotions. It's completely normal to have these feelings. Would you like to talk about what's on your mind? I'm here to listen and support you.",
+              sender: 'bot',
+              timestamp: new Date()
+            }]);
+
+            // Clear the context after using it
+            localStorage.removeItem('bloomBotContext');
+            return;
+          }
+        }
+      } catch (e) {
+        // If there's an error parsing the context, just use the default greeting
+      }
+
+      // Clear any invalid context
+      localStorage.removeItem('bloomBotContext');
+    }
+
+    // Default greeting if no valid context
     setMessages([{
       id: 1,
       text: "Hello! I'm BloomBot and I am your wellness buddy. How can I assist you today?",
       sender: 'bot',
       timestamp: new Date()
     }]);
-  }, []);
+  }, [showChat]); // Added showChat dependency to reinitialize when chat is opened
 
   // Scroll to bottom of messages when new messages are added
   useEffect(() => {

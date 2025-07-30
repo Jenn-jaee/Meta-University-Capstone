@@ -260,8 +260,9 @@ function DashBoardHome() {
       'journal_gap': "Write Journal",
       'no_journals_yet': "Write Journal",
 
-      // Distress-related
+      // Distress and negative sentiment related
       'distress_text': "Chat with BloomBot",
+      'word-usage-negative': "Chat with BloomBot",
 
       // Mood-related
       'mood_drop': "Log Mood",
@@ -329,16 +330,27 @@ function DashBoardHome() {
               if (tag === 'journal_gap' || tag === 'no_journals_yet') {
                 navigate('/dashboard/journal/new');
               }
-              // Distress related - open BloomBot chat
-              else if (tag === 'distress_text') {
+              // Distress or negative sentiment related - open BloomBot chat with context
+              else if (tag === 'distress_text' || tag === 'word-usage-negative') {
+                // Set context for BloomBot to know this is coming from a distress or negative banner
+                const contextData = {
+                  type: tag === 'distress_text' ? 'distress_journal' : 'negative_journal',
+                  timestamp: Date.now()
+                };
+                localStorage.setItem('bloomBotContext', JSON.stringify(contextData));
+
                 // Find BloomBot button and click it to open the chat
-                const bloomBotButton = document.querySelector('.bloombot-button');
-                if (bloomBotButton) {
-                  bloomBotButton.click();
-                } else {
-                  // If button not found, stay on dashboard
-                  toast.info('BloomBot is ready to chat with you! Look for the flower icon.');
-                }
+                // Use a slightly longer delay to ensure the guide tip modal is fully closed
+                setTimeout(() => {
+                  const bloomBotButton = document.querySelector('.bloombot-button');
+
+                  if (bloomBotButton) {
+                    bloomBotButton.click();
+                  } else {
+                    // If button not found, stay on dashboard
+                    toast.info('BloomBot is ready to chat with you! Look for the flower icon.');
+                  }
+                }, 500); // Increased delay to 500ms
               }
               // Mood-related banners
               else if (['mood_drop', 'low_mood', 'mood_swing', 'mood_volatility'].includes(tag)) {

@@ -10,9 +10,10 @@ import PlantGrid from '../components/PlantGrid';
 import { checkAndGrowPlant } from '../services/plantService';
 import ProgressRing from '../components/ProgressRing';
 import { getWeeklyEngagement } from '../utils/engagement.js';
-import { calculateMoodStreak, getMoodEmoji } from '../utils/moodUtils';
+import { calculateMoodStreak, getMoodEmoji, getMoodName } from '../utils/moodUtils';
 import RecommendationBanner from '../components/RecommendationBanner.jsx';
 import GuideTipModal from '../components/GuideTipModal.jsx';
+import DailyQuote from '../components/DailyQuotes.jsx';
 import './DashboardHome.css';
 
 // Helper function to get action text based on banner tag
@@ -355,6 +356,10 @@ function DashBoardHome() {
           }}
         />
       )}
+
+      <div className="dashboard-quote-container">
+        <DailyQuote mood={todayMood ? getMoodName(todayMood.mood).toLowerCase() : 'random'} />
+      </div>
 
       <header className="dashboard-header">
         <h2>

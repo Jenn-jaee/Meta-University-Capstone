@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from '../api/axiosInstance.js';
 import HabitItem from './HabitItem';
-import { FiInfo, FiLoader } from 'react-icons/fi'; // Import icons for better UI
+import { FiInfo, FiLoader } from 'react-icons/fi';
 import './Habit.css';
 import toast from 'react-hot-toast';
 
@@ -9,7 +9,7 @@ function HabitList({ onEdit }) {
   // State management for habits, logs, and loading status
   const [habits, setHabits] = useState([]);
   const [logs, setLogs] = useState([]);
-  const [loading, setLoading] = useState(true); // Added loading state for better UX
+  const [loading, setLoading] = useState(true);
 
   // Fetch habits and logs when component mounts
   useEffect(() => {
@@ -17,41 +17,35 @@ function HabitList({ onEdit }) {
     fetchLogs();
   }, []);
 
-  /**
-   * Fetches all habits for the current user
-   * Shows loading state during fetch and handles errors with toast notifications
-   */
   const fetchHabits = () => {
     setLoading(true); // Show loading state while fetching
-    axios.get('/api/habits')
-      .then((res) => {
-        setHabits(res.data);
+
+    // Always verify streaks first to ensure they're up to date
+    axios.post('/api/habits/verify-streaks')
+      .then((verifyRes) => {
+        setHabits(verifyRes.data.habits);
         setLoading(false); // Hide loading state on success
       })
       .catch(() => {
-        toast.error('Failed to load habits'); // User-friendly error handling
-        setLoading(false); // Hide loading state on error
+        // If streak verification fails, fall back to regular habits endpoint
+        axios.get('/api/habits')
+          .then((res) => {
+            setHabits(res.data);
+            setLoading(false);
+          })
+          .catch(() => {
+            toast.error('Failed to load habits');
+            setLoading(false);
+          });
       });
   };
 
-  /**
-   * Fetches today's habit logs to determine which habits are completed
-   * Uses toast notifications for error handling instead of console.error
-   */
   const fetchLogs = () => {
     axios.get('/api/habit-logs/today')
       .then((res) => setLogs(res.data))
       .catch(() => toast.error('Failed to load habit logs'));
   };
 
-  /**
-   * Handles toggling a habit's completion status
-   * Uses optimistic UI updates for better user experience
-   * Reverts changes if the server request fails
-   *
-   * @param {string} habitId - The ID of the habit to toggle
-   * @param {boolean} isCompleted - The current completion status
-   */
   const handleToggle = (habitId, isCompleted) => {
     // Optimistically update local log for immediate UI feedback
     setLogs((prevLogs) => {
@@ -86,12 +80,6 @@ function HabitList({ onEdit }) {
     });
   };
 
-  /**
-   * Deletes a habit by ID
-   * Updates UI immediately and shows success/error notifications
-   *
-   * @param {string} id - The ID of the habit to delete
-   */
   const deleteHabit = (id) => {
     axios.delete(`/api/habits/${id}`)
       .then(() => {

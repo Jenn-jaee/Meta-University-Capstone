@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { moodOptions, moodMap } from '../utils/moodUtils';
+import { journalMoodOptions, journalMoodMap } from '../utils/journalMoodUtils';
 import './JournalSearch.css';
 
 function JournalSearch({ onSearch }) {
@@ -118,14 +118,14 @@ function JournalSearch({ onSearch }) {
             <div className="search-field mood-filter">
               <label>Filter by mood:</label>
               <div className="mood-filter-options">
-                {moodOptions.map((mood) => (
+                {journalMoodOptions.map((mood) => (
                   <label key={mood.value} className="mood-filter-option">
                     <input
                       type="radio"
                       name="moodFilter"
-                      value={moodMap[mood.value]}
-                      checked={selectedMood === moodMap[mood.value].toString()}
-                      onChange={() => setSelectedMood(moodMap[mood.value].toString())}
+                      value={journalMoodMap[mood.value]}
+                      checked={selectedMood === journalMoodMap[mood.value].toString()}
+                      onChange={() => setSelectedMood(journalMoodMap[mood.value].toString())}
                     />
                     <span className="mood-filter-label">
                       <span className="mood-emoji">{mood.emoji}</span> {mood.label}

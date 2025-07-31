@@ -40,6 +40,7 @@ const connectionRequestRoutes = require('./routes/connectionRequests');
 const connectionRoutes = require('./routes/connections');
 const wordAnalyticsRoutes = require('./routes/wordAnalytics');
 const quotesRoutes = require('./routes/quotes');
+const bloomBotRoute = require('./routes/bloomBot');
 
 
 app.use('/api/auth', authRoutes);
@@ -56,7 +57,7 @@ app.use('/api/connection-requests', connectionRequestRoutes);
 app.use('/api/connections', connectionRoutes);
 app.use('/api/word-analytics', wordAnalyticsRoutes);
 app.use('/api/quotes', quotesRoutes);
-
+app.use('/api/bloombot', bloomBotRoute);
 
 //Test route
 app.get('/', (req, res) => {

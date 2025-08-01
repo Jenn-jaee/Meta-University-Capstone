@@ -42,44 +42,59 @@ const WeeklyMoodSummary = ({ weeklyData }) => {
   let trend = 'stable';
   let trendIcon = <FaEquals className="trend-icon stable" />;
 
-  // Sort data by date (oldest first) to analyze chronological trend
+  // Sort data by date (oldest first)
   const sortedData = [...weeklyData].sort((a, b) =>
-    new Date(a.createdAt) - new Date(b.createdAt)
+    new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
   );
 
-  // Get mood values in chronological order
-  const chronologicalMoods = sortedData.map(entry => entry.mood);
+  if (sortedData.length >= 2) {
+    // Get mood values in chronological order
+    const chronologicalMoods = sortedData.map(entry => entry.mood);
 
-  if (chronologicalMoods.length >= 2) {
-    // Check if most frequent mood is negative (0-2)
-    const isMostFrequentNegative = mostFrequentMood <= 2;
+    // Calculate trend score using a more sophisticated algorithm
+    let trendScore = 0;
 
-    // Check if average mood is low
-    const isAverageLow = averageMood <= 2.5;
+    // Factor 1: Recent trend direction (last 2-3 entries)
+    const recentMoods = chronologicalMoods.slice(-3);
+    const mostRecent = recentMoods[recentMoods.length - 1];
+    const secondMostRecent = recentMoods.length > 1 ? recentMoods[recentMoods.length - 2] : null;
 
-    // Check the trend direction
-    let trendDirection = 0;
+    // Check if most recent mood is high (4-5)
+    if (mostRecent >= 4) trendScore += 2;
 
-    // Look at the last few entries to determine recent trend
-    const recentEntries = chronologicalMoods.slice(-3);
-
-    if (recentEntries.length >= 2) {
-      // Compare the most recent mood with the one before
-      const mostRecent = recentEntries[recentEntries.length - 1];
-      const secondMostRecent = recentEntries[recentEntries.length - 2];
-
-      if (mostRecent > secondMostRecent) {
-        trendDirection = 1; // Improving recently
-      } else if (mostRecent < secondMostRecent) {
-        trendDirection = -1; // Declining recently
-      }
+    // Compare most recent with previous
+    if (secondMostRecent !== null) {
+      trendScore += (mostRecent - secondMostRecent);
     }
 
-    // Determine overall trend based on multiple factors
-    if (trendDirection > 0 && !isMostFrequentNegative) {
+    // Factor 2: Overall trend (first half vs second half)
+    const midpoint = Math.floor(chronologicalMoods.length / 2);
+    const firstHalf = chronologicalMoods.slice(0, midpoint);
+    const secondHalf = chronologicalMoods.slice(midpoint);
+
+    const firstHalfAvg = firstHalf.reduce((sum, val) => sum + val, 0) / firstHalf.length;
+    const secondHalfAvg = secondHalf.reduce((sum, val) => sum + val, 0) / secondHalf.length;
+
+    trendScore += (secondHalfAvg - firstHalfAvg) * 2;
+
+    // Factor 3: Low mood frequency
+    const lowMoodsCount = chronologicalMoods.filter(mood => mood <= 2).length;
+    const recentLowMoodsCount = chronologicalMoods.slice(-3).filter(mood => mood <= 2).length;
+
+    if (lowMoodsCount > 0 && recentLowMoodsCount === 0) trendScore += 1; // Fewer low moods recently
+    if (recentLowMoodsCount >= 2) trendScore -= 2; // Multiple recent low moods
+
+    // Factor 4: Recovery after dip
+    const hasRecovery = chronologicalMoods.length >= 4 &&
+                        chronologicalMoods[chronologicalMoods.length - 3] > chronologicalMoods[chronologicalMoods.length - 2] &&
+                        chronologicalMoods[chronologicalMoods.length - 1] > chronologicalMoods[chronologicalMoods.length - 2];
+    if (hasRecovery) trendScore += 1;
+
+    // Determine trend based on score
+    if (trendScore >= 2) {
       trend = 'improving';
       trendIcon = <FaArrowUp className="trend-icon improving" />;
-    } else if (trendDirection < 0 || (isMostFrequentNegative && isAverageLow)) {
+    } else if (trendScore <= -2) {
       trend = 'declining';
       trendIcon = <FaArrowDown className="trend-icon declining" />;
     }

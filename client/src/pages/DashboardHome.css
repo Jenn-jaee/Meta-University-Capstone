@@ -6,6 +6,10 @@
   color: var(--fg);
 }
 
+.dashboard-header {
+  margin-bottom: 1.5rem;
+}
+
 .dashboard-header h2 {
   font-size: 2rem;
   margin-bottom: 0.2rem;
@@ -15,6 +19,42 @@
 .dashboard-header p {
   font-size: 1rem;
   color: var(--muted);
+}
+
+.dashboard-quote-container {
+  position: fixed;
+  top: 80px;
+  right: 2rem;
+  width: 280px;
+  z-index: 100;
+}
+
+.dashboard-quote-container .quote-card {
+  box-shadow: 0 10px 25px rgba(31, 38, 135, 0.18);
+  transform: rotate(-1deg);
+}
+
+.dashboard-quote-container .quote-card:hover {
+  transform: rotate(1deg) translateY(-5px);
+}
+
+@media (max-width: 992px) {
+  .dashboard-quote-container {
+    position: static;
+    margin: 0 auto 2rem;
+    width: 100%;
+    max-width: 280px;
+    transform: none;
+  }
+
+  .dashboard-quote-container .quote-card {
+    transform: none;
+    margin: 0 auto;
+  }
+
+  .dashboard-quote-container .quote-card:hover {
+    transform: translateY(-5px);
+  }
 }
 
 .dashboard-section {

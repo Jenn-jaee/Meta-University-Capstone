@@ -16,8 +16,7 @@ const SimpleMoodChart = ({ moodData }) => {
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
-      weekday: 'short',
-      day: 'numeric'
+      weekday: 'short' // 'short' gives abbreviated weekday name (Mon, Tue, etc.)
     });
   };
 
@@ -29,19 +28,87 @@ const SimpleMoodChart = ({ moodData }) => {
     );
   }
 
-  // Sort data by date (oldest to newest) for display
-  const sortedData = [...moodData].sort((a, b) =>
-    new Date(a.createdAt) - new Date(b.createdAt)
-  );
+  // Prepare data for display with all days of the week
+  const prepareWeeklyData = () => {
+    if (!moodData || moodData.length === 0) return [];
 
-  // Create smooth path for the line
+    // Sort data by date (oldest to newest)
+    const sortedData = [...moodData].sort((a, b) =>
+      new Date(a.createdAt) - new Date(b.createdAt)
+    );
+
+    // Find the earliest and latest dates in the data
+    const earliestDate = new Date(sortedData[0].createdAt);
+    const latestDate = new Date(sortedData[sortedData.length - 1].createdAt);
+
+    // Create a map of existing data points by date string
+    const dataByDate = {};
+    sortedData.forEach(entry => {
+      const dateStr = new Date(entry.createdAt).toISOString().split('T')[0];
+      dataByDate[dateStr] = entry;
+    });
+
+    // Create an array with all days in the range
+    const allDays = [];
+    const currentDate = new Date(earliestDate);
+
+    // Ensure we start from Monday if we're showing a week
+    if (sortedData.length <= 7) {
+      // Find the Monday of the week containing the earliest date
+      const dayOfWeek = currentDate.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+      const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Go back to Monday
+      currentDate.setDate(currentDate.getDate() - daysToSubtract);
+    }
+
+    // Generate all days in the range
+    while (currentDate <= latestDate) {
+      const dateStr = currentDate.toISOString().split('T')[0];
+
+      // Add the day to our array, either with real data or placeholder
+      if (dataByDate[dateStr]) {
+        allDays.push(dataByDate[dateStr]);
+      } else {
+        // Create a placeholder for days with no data
+        allDays.push({
+          id: `placeholder-${dateStr}`,
+          createdAt: new Date(currentDate),
+          mood: null, // No mood data for this day
+          isPlaceholder: true
+        });
+      }
+
+      // Move to next day
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return allDays;
+  };
+
+  // Get the prepared data with all days
+  const preparedData = prepareWeeklyData();
+
+  // Create smooth path for the line (only for days with actual data)
   const createSmoothPath = () => {
-    if (sortedData.length < 2) return null;
+    // Filter out placeholders
+    const dataPoints = preparedData.filter(entry => !entry.isPlaceholder);
 
-    const points = sortedData.map((entry, index) => ({
-      x: (index / (sortedData.length - 1)) * 100,
-      y: (entry.mood / 5) * 100
-    }));
+    if (dataPoints.length < 2) return null;
+
+    // Calculate x positions based on the full range of days
+    const points = dataPoints.map(entry => {
+      // Find the index in the full prepared data
+      const index = preparedData.findIndex(item =>
+        new Date(item.createdAt).toISOString() === new Date(entry.createdAt).toISOString()
+      );
+
+      return {
+        x: (index / (preparedData.length - 1)) * 100,
+        y: (entry.mood / 5) * 100
+      };
+    });
+
+    // Sort points by x value to ensure proper path
+    points.sort((a, b) => a.x - b.x);
 
     // Create SVG path
     let path = `M ${points[0].x} ${100 - points[0].y}`;
@@ -89,30 +156,32 @@ const SimpleMoodChart = ({ moodData }) => {
           </svg>
 
           <div className="data-points">
-            {sortedData.map((entry, index) => (
-              <div
-                key={entry.id || index}
-                className="data-point"
-                style={{
-                  left: `${(index / (sortedData.length - 1 || 1)) * 100}%`,
-                  bottom: `${(entry.mood / 5) * 100}%`
-                }}
-                title={`${formatDate(entry.createdAt)}: ${entry.note || 'No note'}`}
-              >
-                <span className="point-marker"></span>
-              </div>
+            {preparedData.map((entry, index) => (
+              !entry.isPlaceholder && (
+                <div
+                  key={entry.id || index}
+                  className="data-point"
+                  style={{
+                    left: `${(index / (preparedData.length - 1 || 1)) * 100}%`,
+                    bottom: `${(entry.mood / 5) * 100}%`
+                  }}
+                  title={`${formatDate(entry.createdAt)}: ${entry.note || 'No note'}`}
+                >
+                  <span className="point-marker"></span>
+                </div>
+              )
             ))}
           </div>
         </div>
       </div>
 
       <div className="x-axis-labels">
-        {sortedData.map((entry, index) => (
+        {preparedData.map((entry, index) => (
           <div
             key={entry.id || index}
             className="x-label"
             style={{
-              left: `${(index / (sortedData.length - 1 || 1)) * 100}%`,
+              left: `${(index / (preparedData.length - 1 || 1)) * 100}%`,
             }}
           >
             {formatDate(entry.createdAt)}

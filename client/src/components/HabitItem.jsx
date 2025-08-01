@@ -1,28 +1,17 @@
 import { useState } from 'react';
 import axios from '../api/axiosInstance';
-import { FiEdit2, FiTrash2, FiCheckCircle } from 'react-icons/fi'; // Import icons for better UI
-import './Habit.css';
+import { FiEdit2, FiTrash2, FiCheckCircle } from 'react-icons/fi';
 
-/**
- * HabitItem Component
- * Displays an individual habit card with toggle, edit, and delete functionality
- *
- * @param {Object} habit - The habit object containing id, title, description, streak, etc.
- * @param {boolean} isCompleted - Whether the habit is completed for today
- * @param {Function} onEdit - Function to handle editing the habit
- * @param {Function} onDelete - Function to handle deleting the habit
- * @param {Function} onToggle - Function to handle toggling the habit's completion status
- */
+
 function HabitItem({ habit, isCompleted, onEdit, onDelete, onToggle }) {
   // Local state for streak count and loading status
   const [streak, setStreak] = useState(habit.streak || 0);
-  const [isLoading, setIsLoading] = useState(false); // Added loading state for better UX
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleToggle = () => {
     // Prevent multiple clicks during loading
     if (isLoading) return;
 
-    // Set loading state to disable toggle
     setIsLoading(true);
     const newStatus = !isCompleted;
 
@@ -37,7 +26,7 @@ function HabitItem({ habit, isCompleted, onEdit, onDelete, onToggle }) {
       }
 
       onToggle(habit.id, newStatus);
-      setIsLoading(false); // Reset loading state
+      setIsLoading(false);
     })
     .catch(() => {
       // Silent fail - error is already handled in HabitList component
@@ -45,13 +34,6 @@ function HabitItem({ habit, isCompleted, onEdit, onDelete, onToggle }) {
     });
   };
 
-  /**
-   * Formats the streak count with a fire emoji for visual impact
-   * Handles plural form correctly
-   *
-   * @param {number} count - The streak count to format
-   * @returns {string} Formatted streak text
-   */
   const formatStreak = (count) => {
     if (count <= 0) return 'No streak yet';
     return `🔥 ${count} day${count !== 1 ? 's' : ''}`;

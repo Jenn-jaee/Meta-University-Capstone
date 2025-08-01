@@ -1,62 +1,69 @@
 .header {
-    background-color: #2c3e50;
-    color: white;
-    padding: 1rem 0;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  }
+  background: linear-gradient(135deg, #7e57c2 0%, #5e35b1 100%);
+  color: white;
+  padding: 1rem 0;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.16);
+}
 
-  .header-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+.header-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
 
-  .header-title {
-    margin: 0;
-    font-size: 1.5rem;
-    color: #ffffff;
-  }
+.header-title {
+  margin: 0;
+  font-size: 1.8rem;
+  color: #ffffff;
+}
 
-  .header-nav {
-    display: flex;
-    gap: 1rem;
-  }
+.header-title-link {
+  text-decoration: none;
+  color: #ffffff;
+  margin-right: auto; /* Push everything else to the right */
+}
 
-  .nav-button {
-    background: none;
-    border: none;
-    color: white;
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-    font-size: 1rem;
-    border-radius: 5px;
-    transition: background-color 0.3s;
-  }
+.header-nav {
+  display: flex;
+  gap: 1rem;
+}
 
-  .nav-button:hover {
-    background-color: rgba(255,255,255,0.1);
-  }
+.nav-button {
+  background: none;
+  border: none;
+  color: white;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 1rem;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+  text-decoration: none;
+}
 
-  .nav-button.active {
-    background-color: #9b7ede; /* Lavender color that stands out */
-    font-weight: 500; /* Make text slightly bolder */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Add subtle shadow for depth */
-  }
+.nav-button:hover {
+  background-color: rgba(255,255,255,0.1);
+}
 
-  .logout-button {
-    background-color: #e74c3c;
-    border: none;
-    color: white;
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-    font-size: 1rem;
-    border-radius: 5px;
-    transition: background-color 0.3s;
-  }
+.nav-button.active {
+  background-color: #9b7ede; /* Lavender color that stands out */
+  font-weight: 500; /* Make text slightly bolder */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Add subtle shadow for depth */
+}
 
-  .logout-button:hover {
-    background-color: #c0392b;
-  }
+.logout-button {
+  background-color: #e74c3c;
+  border: none;
+  color: white;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 1rem;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+.logout-button:hover {
+  background-color: #c0392b;
+}

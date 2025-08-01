@@ -1,5 +1,5 @@
 import { Toaster } from 'react-hot-toast';
-import SignIn from './components/signIn';
+import SignIn from './components/SignIn';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import DashboardLayout from './pages/DashboardLayout';
 import DashboardHome from './pages/DashBoardHome';

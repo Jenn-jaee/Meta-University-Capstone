@@ -3,7 +3,8 @@
   background-color: var(--panel-purple);
   min-height: 100vh;
   font-family: 'Segoe UI', sans-serif;
-  color: var(--fg);
+  /* color: var(--fg); */
+  color: blue;
 }
 
 .dashboard-header {

@@ -8,7 +8,7 @@
 
 /* Dashboard Content Panel */
 .dashboard-content {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 2rem auto;
   padding: 2rem;
   background: var(--panel-purple);

@@ -71,8 +71,8 @@ function HabitItem({ habit, isCompleted, onEdit, onDelete, onToggle }) {
           </button>
         </div>
         <div className="right-actions">
-          <button onClick={() => onDelete(habit.id)} className="delete-button icon-button">
-            <FiTrash2 className="button-icon" /> Delete
+          <button onClick={() => onDelete(habit.id)} className="delete-button">
+            Delete
           </button>
         </div>
       </div>

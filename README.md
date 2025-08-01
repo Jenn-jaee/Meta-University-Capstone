@@ -16,7 +16,9 @@ Final Passion Project
 * **Auth:** JWT + Google OAuth
 * **Performance:** **Custom LRU Caching** (limits repeated DB queries)
 * **Realtime:** **WebSockets (bidirectional, event-driven)**
-* **APIs Used:** **Bloomberg APIs**, **Gemini 2.0**
+* **APIs Used:**
+    - **Google OAuth** – authentication via Google’s login service    
+    - **Gemini 2.0** – AI-powered wellness assistant(Bloombot) 
 * **Custom Service:** **Daily Quotes API** (in-app, returns random quotes)
 
 ---
@@ -45,17 +47,13 @@ Final Passion Project
 
 ## **Technical Challenges**
 
-### **1) Recommendation Banner System**
+### **1) Personalized Plant Growth Logic Plus Recommendation Banner System**
+This combined system evaluates patterns of user engagement and turns them into both visual plant growth and targeted recommendations:  
+- **Plant Growth Logic:** Evaluates weekly engagement through mood logging and journaling, then advances plant stages in a way that feels personal to each user.  
+- **Recommendation Banner System:** A behavior-aware engine that ranks which banner to show based on a scoring model. Scores are calculated from user activity signals and **decrease over time using a decay constant** unless boosted by new activity. This ensures the most relevant, timely banners are shown without repetition.
 
-A behavior-aware system that ranks which banner to show using a **weighted scoring model**. Signals include mood consistency, habit streaks, journaling recency, and comeback behavior. Scores **decay over time** using a mathematical **decay constant**, so older activity loses influence unless reinforced. The highest-priority banner surfaces first; cool-downs prevent repetition.
-
-### **2) Personalized Plant Growth Logic**
-
-Growth isn’t tied to a single fixed threshold. Instead, it evaluates a user’s recent engagement pattern (mood logs, journaling, habit completion) and advances plant stages based on sustained activity, making progress feel earned and personal.
-
-### **3) Social Feed & Dynamic User Recommendations**
-
-A lightweight social layer powered by **WebSockets** for live updates. A **dynamic recommendation** routine suggests connections using activity similarity and shared habits—kept intentionally minimal to avoid clutter, while still useful.
+### **2) Social Feed + Dynamic User Suggested Recommendation**
+The social experience is powered by **WebSockets** for instant updates to feeds and connections. **Custom LRU Caching** is used to store and quickly serve high-demand queries (like frequently suggested users) without repeatedly hitting the database. The suggested user system takes into account shared habits, recent activity, and interaction patterns to surface the most relevant connections.
 
 ---
 

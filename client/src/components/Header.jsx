@@ -5,7 +5,9 @@ function Header({ onLogout }) {
   return (
     <header className="header">
       <div className="header-container">
-        <h1 className="header-title">MindBloom</h1>
+        <NavLink to="/dashboard" className="header-title-link">
+          <h1 className="header-title">Bloom</h1>
+        </NavLink>
         <nav className="header-nav">
           <NavLink
             to="/dashboard"
@@ -58,9 +60,6 @@ function Header({ onLogout }) {
             👥 Connections
           </NavLink>
 
-          <button className="logout-button" onClick={onLogout}>
-            Logout
-          </button>
 
           <NavLink
             to="feed"
@@ -71,6 +70,10 @@ function Header({ onLogout }) {
             Feed
           </NavLink>
 
+
+          <button className="logout-button" onClick={onLogout}>
+            Logout
+          </button>
         </nav>
       </div>
     </header>

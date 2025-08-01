@@ -388,9 +388,9 @@ function DashBoardHome() {
 
       <header className="dashboard-header">
         <h2>
-          {displayName && hasSeenWelcome
-            ? `Welcome back to your wellness journey, ${displayName} 👋`
-            : `Hi ${displayName || 'there'} 👋 Welcome to your wellness journey`}
+          {!hasSeenWelcome
+            ? `Hi ${displayName || 'there'} 👋 Welcome to your wellness journey`
+            : `Welcome back to your wellness journey, ${displayName} 👋`}
         </h2>
       </header>
 

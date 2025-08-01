@@ -140,6 +140,9 @@
   transform: translateX(-50%);
   font-size: 0.8rem;
   color: #555;
+  white-space: nowrap;
+  text-align: center;
+  margin-top: 5px;
 }
 
 /* Animation for chart elements */

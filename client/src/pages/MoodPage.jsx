@@ -82,12 +82,30 @@ function MoodPage() {
     now.setHours(23, 59, 59, 999); // End of today
 
     let startDate;
+    let endDate = new Date(now);
 
     switch (filter) {
       case 'week':
+        // Get current day of week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+        const currentDay = now.getDay();
+
+        // Calculate days since last Monday (if today is Monday, this will be 0)
+        const daysSinceMonday = currentDay === 0 ? 6 : currentDay - 1;
+
+        // Set start date to Monday of current week
         startDate = new Date(now);
-        startDate.setDate(now.getDate() - 6); // Last 7 days including today
-        startDate.setHours(0, 0, 0, 0); // Start of the day
+        startDate.setDate(now.getDate() - daysSinceMonday);
+        startDate.setHours(0, 0, 0, 0); // Start of Monday
+
+        // Set end date to Sunday of current week
+        endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + 6); // Sunday
+        endDate.setHours(23, 59, 59, 999); // End of Sunday
+
+        // If end date is in the future, cap it at today
+        if (endDate > now) {
+          endDate = now;
+        }
         break;
       case 'month':
         startDate = new Date(now);
@@ -100,9 +118,21 @@ function MoodPage() {
         startDate.setHours(0, 0, 0, 0);
         break;
       default:
+        // Default to current week (Monday-Sunday)
+        const defaultCurrentDay = now.getDay();
+        const defaultDaysSinceMonday = defaultCurrentDay === 0 ? 6 : defaultCurrentDay - 1;
+
         startDate = new Date(now);
-        startDate.setDate(now.getDate() - 6);
+        startDate.setDate(now.getDate() - defaultDaysSinceMonday);
         startDate.setHours(0, 0, 0, 0);
+
+        endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + 6);
+        endDate.setHours(23, 59, 59, 999);
+
+        if (endDate > now) {
+          endDate = now;
+        }
     }
 
     setCurrentStartDate(startDate);
@@ -140,32 +170,47 @@ function MoodPage() {
 
   // Navigate to previous period
   const goToPreviousPeriod = () => {
-    const newEndDate = new Date(currentStartDate);
-    newEndDate.setDate(newEndDate.getDate() - 1);
-    newEndDate.setHours(23, 59, 59, 999);
-
-    let newStartDate;
+    let newStartDate, newEndDate;
 
     switch (timeFilter) {
       case 'week':
-        newStartDate = new Date(newEndDate);
-        newStartDate.setDate(newEndDate.getDate() - 6);
+        // Go to previous Monday
+        newStartDate = new Date(currentStartDate);
+        newStartDate.setDate(newStartDate.getDate() - 7); // Go back 7 days to previous Monday
         newStartDate.setHours(0, 0, 0, 0);
+
+        // Set end date to Sunday of that week
+        newEndDate = new Date(newStartDate);
+        newEndDate.setDate(newStartDate.getDate() + 6); // Sunday
+        newEndDate.setHours(23, 59, 59, 999);
         break;
       case 'month':
-        newStartDate = new Date(newEndDate);
-        newStartDate.setDate(newEndDate.getDate() - 29);
+        newStartDate = new Date(currentStartDate);
+        newStartDate.setDate(newStartDate.getDate() - 30);
         newStartDate.setHours(0, 0, 0, 0);
+
+        newEndDate = new Date(currentEndDate);
+        newEndDate.setDate(newEndDate.getDate() - 30);
+        newEndDate.setHours(23, 59, 59, 999);
         break;
       case 'year':
-        newStartDate = new Date(newEndDate);
-        newStartDate.setFullYear(newEndDate.getFullYear() - 1);
+        newStartDate = new Date(currentStartDate);
+        newStartDate.setFullYear(newStartDate.getFullYear() - 1);
         newStartDate.setHours(0, 0, 0, 0);
+
+        newEndDate = new Date(currentEndDate);
+        newEndDate.setFullYear(newEndDate.getFullYear() - 1);
+        newEndDate.setHours(23, 59, 59, 999);
         break;
       default:
-        newStartDate = new Date(newEndDate);
-        newStartDate.setDate(newEndDate.getDate() - 6);
+        // Default to previous week
+        newStartDate = new Date(currentStartDate);
+        newStartDate.setDate(newStartDate.getDate() - 7);
         newStartDate.setHours(0, 0, 0, 0);
+
+        newEndDate = new Date(newStartDate);
+        newEndDate.setDate(newStartDate.getDate() + 6);
+        newEndDate.setHours(23, 59, 59, 999);
     }
 
     setCurrentStartDate(newStartDate);
@@ -178,29 +223,44 @@ function MoodPage() {
     const now = new Date();
     now.setHours(23, 59, 59, 999);
 
-    const newStartDate = new Date(currentEndDate);
-    newStartDate.setDate(newStartDate.getDate() + 1);
-    newStartDate.setHours(0, 0, 0, 0);
-
-    let newEndDate;
+    let newStartDate, newEndDate;
 
     switch (timeFilter) {
       case 'week':
+        // Go to next Monday
+        newStartDate = new Date(currentStartDate);
+        newStartDate.setDate(newStartDate.getDate() + 7); // Go forward 7 days to next Monday
+        newStartDate.setHours(0, 0, 0, 0);
+
+        // Set end date to Sunday of that week
         newEndDate = new Date(newStartDate);
-        newEndDate.setDate(newStartDate.getDate() + 6);
+        newEndDate.setDate(newStartDate.getDate() + 6); // Sunday
         newEndDate.setHours(23, 59, 59, 999);
         break;
       case 'month':
-        newEndDate = new Date(newStartDate);
-        newEndDate.setDate(newStartDate.getDate() + 29);
+        newStartDate = new Date(currentStartDate);
+        newStartDate.setDate(newStartDate.getDate() + 30);
+        newStartDate.setHours(0, 0, 0, 0);
+
+        newEndDate = new Date(currentEndDate);
+        newEndDate.setDate(newEndDate.getDate() + 30);
         newEndDate.setHours(23, 59, 59, 999);
         break;
       case 'year':
-        newEndDate = new Date(newStartDate);
-        newEndDate.setFullYear(newStartDate.getFullYear() + 1);
+        newStartDate = new Date(currentStartDate);
+        newStartDate.setFullYear(newStartDate.getFullYear() + 1);
+        newStartDate.setHours(0, 0, 0, 0);
+
+        newEndDate = new Date(currentEndDate);
+        newEndDate.setFullYear(newEndDate.getFullYear() + 1);
         newEndDate.setHours(23, 59, 59, 999);
         break;
       default:
+        // Default to next week
+        newStartDate = new Date(currentStartDate);
+        newStartDate.setDate(newStartDate.getDate() + 7);
+        newStartDate.setHours(0, 0, 0, 0);
+
         newEndDate = new Date(newStartDate);
         newEndDate.setDate(newStartDate.getDate() + 6);
         newEndDate.setHours(23, 59, 59, 999);
@@ -209,7 +269,24 @@ function MoodPage() {
     // If the new end date is in the future, cap it at today
     if (newEndDate > now) {
       newEndDate = now;
+    }
+
+    // If the new start date is in the future, don't navigate
+    if (newStartDate > now) {
+      return;
+    }
+
+    // If we're navigating to the current week, disable forward navigation
+    const currentDay = now.getDay();
+    const daysSinceMonday = currentDay === 0 ? 6 : currentDay - 1;
+    const currentWeekMonday = new Date(now);
+    currentWeekMonday.setDate(now.getDate() - daysSinceMonday);
+    currentWeekMonday.setHours(0, 0, 0, 0);
+
+    if (newStartDate.getTime() === currentWeekMonday.getTime()) {
       setCanGoForward(false);
+    } else {
+      setCanGoForward(true);
     }
 
     setCurrentStartDate(newStartDate);

@@ -67,13 +67,9 @@ The social experience is powered by **WebSockets** for instant updates to feeds 
 
 ---
 
-## **Setup & Installation **
+## Setup & Installation 
 
 ```bash
-# Clone
-git clone https://github.com/yourusername/bloom.git
-cd bloom
-
 # Install
 cd server && npm install
 cd ../client && npm install

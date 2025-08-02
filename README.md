@@ -97,3 +97,6 @@ cd client && npm start
 Link to my Google doc
 
 https://docs.google.com/document/d/1yApXW_fFCeYx7zu1no3G8mt6XkqxwC2zeUROsKsnLjc/edit?usp=sharing
+
+Video Demo:
+https://www.loom.com/share/33a930787c37461aaa9289e14b56afab?sid=b7348543-a7ab-429f-ab15-9947bcde7659
